@@ -1,0 +1,64 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "financebro-flow",
+  "elements": [],
+  "appState": {
+    "theme": "dark"
+  },
+  "metadata": {
+    "flows": {
+      "interview": {
+        "nodes": [
+          { "id": "domain_select", "title": "Domain Select" },
+          { "id": "role_select", "title": "Role Select" },
+          { "id": "level_select", "title": "Level Select" },
+          { "id": "interview_prep", "title": "Interview Prep" },
+          { "id": "realtime_session", "title": "Realtime Session" },
+          { "id": "scoring", "title": "Scoring" },
+          { "id": "feedback_report", "title": "Feedback Report" },
+          { "id": "dashboard", "title": "Dashboard" }
+        ],
+        "edges": [
+          { "from": "domain_select", "to": "role_select" },
+          { "from": "role_select", "to": "level_select" },
+          { "from": "level_select", "to": "interview_prep" },
+          { "from": "interview_prep", "to": "realtime_session" },
+          { "from": "realtime_session", "to": "scoring" },
+          { "from": "scoring", "to": "feedback_report" },
+          { "from": "feedback_report", "to": "dashboard" }
+        ]
+      },
+      "site": {
+        "nodes": [
+          { "id": "home", "title": "Home" },
+          { "id": "pricing", "title": "Pricing" },
+          { "id": "contact", "title": "Contact" },
+          { "id": "team", "title": "Notre équipe / Advisors" },
+          { "id": "auth", "title": "Auth (Log in / Sign up)" },
+          { "id": "pre", "title": "Questionnaire de pré entretien" },
+          { "id": "run", "title": "Run Interview (Realtime + Avatar)" },
+          { "id": "analysis", "title": "Analysis of the Interview" },
+          { "id": "feedback_general", "title": "General Feedback" },
+          { "id": "feedback_qq", "title": "Question by question analysis" },
+          { "id": "feedback_pdf", "title": "Download PDF Feedback" },
+          { "id": "dashboard", "title": "Mon tableau de bord" }
+        ],
+        "edges": [
+          { "from": "home", "to": "pricing" },
+          { "from": "home", "to": "contact" },
+          { "from": "home", "to": "team" },
+          { "from": "home", "to": "auth" },
+          { "from": "home", "to": "pre" },
+          { "from": "pre", "to": "run" },
+          { "from": "run", "to": "analysis" },
+          { "from": "analysis", "to": "feedback_general" },
+          { "from": "analysis", "to": "feedback_qq" },
+          { "from": "feedback_general", "to": "feedback_pdf" },
+          { "from": "feedback_qq", "to": "feedback_pdf" },
+          { "from": "home", "to": "dashboard" }
+        ]
+      }
+    }
+  }
+}
