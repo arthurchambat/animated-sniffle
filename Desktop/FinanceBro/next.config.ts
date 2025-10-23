@@ -1,16 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    typedRoutes: true,
-    turbo: {
-      rules: {
-        "*.ts": {
-          sideEffects: false
-        }
-      }
-    }
-  }
+  // Configuration options here if needed
 };
 
 export default nextConfig;
