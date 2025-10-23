@@ -13,7 +13,7 @@ export default function RegisterPage() {
       <AuthForm mode="register" />
       <p className="text-sm text-slate-300/80">
         Already have an account ?{" "}
-        <Link href="/auth/(login)" className="font-semibold text-emerald-200">
+        <Link href="/auth/login" className="font-semibold text-emerald-200">
           Sign in
         </Link>
       </p>

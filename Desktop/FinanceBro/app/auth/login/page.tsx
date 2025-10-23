@@ -13,7 +13,7 @@ export default function LoginPage() {
       <AuthForm mode="login" />
       <p className="text-sm text-slate-300/80">
         No registered yet ?{" "}
-        <Link href="/auth/(register)" className="font-semibold text-emerald-200">
+        <Link href="/auth/register" className="font-semibold text-emerald-200">
           Create an account
         </Link>
       </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,7 +12,7 @@ const navItems = [
   { href: "/team", label: "Notre équipe" },
   { href: "/contact", label: "Nous contacter" },
   { href: "/dashboard", label: "Mon tableau de bord" },
-  { href: "/auth/(login)", label: "Se connecter" }
+  { href: "/auth/login", label: "Se connecter" }
 ];
 
 export function Header() {
@@ -32,7 +32,7 @@ export function Header() {
   }, [pathname]);
 
   return (
-    <motion.header
+    <m.header
       initial={false}
       animate={{
         backgroundColor: scrolled ? "rgba(8, 24, 39, 0.65)" : "rgba(8, 24, 39, 0.4)",
@@ -95,7 +95,7 @@ export function Header() {
 
       <AnimatePresence>
         {open ? (
-          <motion.div
+          <m.div
             key="mobile-menu"
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -123,9 +123,9 @@ export function Header() {
                 Préparez mes entretiens
               </Link>
             </div>
-          </motion.div>
+          </m.div>
         ) : null}
       </AnimatePresence>
-    </motion.header>
+    </m.header>
   );
 }
