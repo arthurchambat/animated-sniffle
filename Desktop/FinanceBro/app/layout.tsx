@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Header } from "@/components/header";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -43,11 +42,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className="min-h-screen text-slate-100 antialiased">
-        <Providers>
-          <Header />
-          <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-36 md:px-8">{children}</main>
-        </Providers>
+      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
