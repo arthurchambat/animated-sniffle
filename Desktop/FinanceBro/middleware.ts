@@ -40,9 +40,6 @@ export async function middleware(request: NextRequest) {
   });
 
   if (mockSessionEnabled) {
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
     if (pathname.startsWith("/auth")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
@@ -56,10 +53,6 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = pathname.startsWith("/auth");
 
   if (session) {
-    // Redirect authenticated users from landing to dashboard
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
     // Redirect authenticated users from auth pages to dashboard
     if (isAuthRoute) {
       return NextResponse.redirect(new URL("/dashboard", request.url));

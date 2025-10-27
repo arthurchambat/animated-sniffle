@@ -4,7 +4,14 @@ import { Controller, type UseFormReturn } from "react-hook-form";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 import { FileDropzone } from "@/components/auth/FileDropzone";
-import type { StepTwoValues } from "@/components/auth/SignUpWizard";
+
+interface StepTwoValues {
+  cvFile?: File;
+  linkedin?: string;
+  school?: string;
+  sector?: string;
+  referral?: string;
+}
 
 interface StepTwoDetailsProps {
   form: UseFormReturn<StepTwoValues>;

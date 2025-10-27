@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,6 +23,7 @@ const inputClass =
 
 export function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
   const supabase = createSupabaseBrowserClient();
@@ -79,10 +80,13 @@ export function SignInForm() {
   const handleGoogleSignIn = async () => {
     setOauthLoading(true);
     try {
+      const next = searchParams?.get("from") ?? "/dashboard";
+      const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: callbackUrl
         }
       });
       if (error) {
