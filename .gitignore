@@ -1,5 +1,19 @@
+# Build and dependency directories
+node_modules/
+.next/
+out/
+
+# Environment files
+.env*
+*.local
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+
+# Legacy nested workspace (kept if still present)
+Desktop/
 Desktop/FinanceBro/node_modules/
 Desktop/FinanceBro/.next/
 Desktop/FinanceBro/out/
 Desktop/FinanceBro/.env*
-.DS_Store

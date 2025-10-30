@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
+import { FinanceLogoMark } from "@/components/branding/FinanceLogoMark";
 import { cn } from "@/lib/cn";
+import { getHeaderHeight, useHeaderHeight } from "@/lib/scroll/useHeaderHeight";
 
 export type NavbarTheme = "dark" | "light";
 
@@ -27,13 +29,13 @@ interface NavbarPublicProps {
 }
 
 const THEME_CLASSES: Record<NavbarTheme, string> = {
-  dark: "text-slate-100 border-white/10 bg-slate-950/50",
-  light: "text-slate-900 border-slate-950/10 bg-white/70"
+  dark: "text-white border-white/20 bg-[#0a0f1f]/80",
+  light: "text-[#0a0f1f] border-[#0a0f1f1a] bg-white/85"
 };
 
 const CTA_CLASSES: Record<NavbarTheme, string> = {
-  dark: "bg-emerald-400 text-slate-950 hover:bg-emerald-300 focus-visible:ring-emerald-200",
-  light: "bg-slate-900 text-emerald-200 hover:bg-slate-800 focus-visible:ring-slate-900/80"
+  dark: "bg-white text-[#0a0f1f] hover:bg-white/85 focus-visible:ring-white/50",
+  light: "bg-[#0a0f1f] text-white hover:bg-[#0a0f1f]/90 focus-visible:ring-[#0a0f1f]/40"
 };
 
 type ChapterChangeDetail = {
@@ -42,6 +44,7 @@ type ChapterChangeDetail = {
 };
 
 export function NavbarPublic({ sections }: NavbarPublicProps) {
+  const { ref: headerRef } = useHeaderHeight();
   const items = sections ?? NAV_SECTIONS;
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [theme, setTheme] = useState<NavbarTheme>("dark");
@@ -49,6 +52,13 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
   const [isVisible, setVisible] = useState(true);
   const lastScrollY = useRef(0);
   const [active, setActive] = useState<string>(items[0]?.id ?? "hero");
+  const getScrollBehavior = () => {
+    if (typeof window === "undefined") {
+      return "auto" as const;
+    }
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? ("auto" as const) : ("smooth" as const);
+  };
+
 
   useEffect(() => {
     const onScroll = () => {
@@ -101,9 +111,23 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
   const handleNavigate = useCallback((event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault();
 
-    const section = document.getElementById(id);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const target = document.getElementById(id);
+    const behavior = getScrollBehavior();
+
+    if (target) {
+      const scroller = document.querySelector('[data-page-scroller="true"]');
+      const headerOffset = getHeaderHeight();
+
+      if (scroller instanceof HTMLElement) {
+        const top = target.getBoundingClientRect().top + scroller.scrollTop - headerOffset;
+        scroller.scrollTo({ top, behavior });
+      } else {
+        target.scrollIntoView({ behavior, block: "start" });
+      }
     }
 
     setMenuOpen(false);
@@ -115,25 +139,25 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
         "fixed left-1/2 z-[60] flex w-[min(960px,92vw)] -translate-x-1/2 items-center justify-between rounded-full border px-5 py-3 backdrop-blur-xl",
         "transition-all duration-300 ease-in-out",
         THEME_CLASSES[theme],
-        isScrolled ? "shadow-2xl shadow-emerald-500/10" : "shadow-lg shadow-black/10",
+        isScrolled
+          ? "shadow-[0_18px_40px_rgba(10,15,31,0.35)]"
+          : "shadow-[0_12px_24px_rgba(10,15,31,0.18)]",
         isVisible ? "top-6 translate-y-0 opacity-100" : "-top-24 -translate-y-full opacity-0"
       ),
     [theme, isScrolled, isVisible]
   );
 
   const ctaClassName = cn(
-    "inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition focus-visible:outline-none focus-visible:ring-2",
+    "inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2",
     CTA_CLASSES[theme]
   );
 
   return (
     <header>
-      <div className={navClassName}>
+      <div ref={headerRef} className={navClassName}>
         <Link href="/" className="flex items-center gap-3 text-sm font-semibold">
-          <span className="finance-gradient flex h-9 w-9 items-center justify-center rounded-lg text-base text-white shadow-lg shadow-emerald-500/20">
-            FB
-          </span>
-          <span>FinanceBro</span>
+          <FinanceLogoMark />
+          <span className="text-base">FinanceBro</span>
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium lg:flex">
@@ -143,8 +167,8 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
               href={`#${item.id}`}
               onClick={(event) => handleNavigate(event, item.id)}
               className={cn(
-                "transition-colors hover:text-emerald-300 focus-visible:outline-none focus-visible:text-emerald-300",
-                active === item.id && "text-emerald-300"
+                "opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:opacity-100",
+                active === item.id && "opacity-100 font-semibold"
               )}
               aria-current={active === item.id ? "page" : undefined}
             >
@@ -152,7 +176,8 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
             </Link>
           ))}
           <Link href="/auth/sign-in" className={ctaClassName}>
-            Get Started
+            <span>Se connecter</span>
+            <LogIn className="ml-2 h-4 w-4" aria-hidden="true" />
           </Link>
         </nav>
 
@@ -163,8 +188,8 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2",
               theme === "dark"
-                ? "border-white/15 bg-white/10 text-slate-100 focus-visible:ring-emerald-200"
-                : "border-slate-900/10 bg-white text-slate-900 focus-visible:ring-slate-900/30"
+                ? "border-white/20 bg-white/10 text-white focus-visible:ring-white/40"
+                : "border-[#0a0f1f1a] bg-white text-[#0a0f1f] focus-visible:ring-[#0a0f1f]/20"
             )}
             aria-expanded={isMenuOpen}
             aria-controls="navbar-public-menu"
@@ -181,8 +206,8 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
           className={cn(
             "fixed inset-x-4 top-[88px] z-[55] rounded-3xl border p-6 shadow-2xl backdrop-blur-xl lg:hidden",
             theme === "dark"
-              ? "border-white/10 bg-slate-950/90 text-slate-100"
-              : "border-slate-900/10 bg-white/95 text-slate-900"
+              ? "border-white/20 bg-[#0a0f1f]/90 text-white"
+              : "border-[#0a0f1f1a] bg-white/95 text-[#0a0f1f]"
           )}
         >
           <div className="flex flex-col gap-4 text-sm font-semibold">
@@ -195,11 +220,11 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
                   "rounded-full px-4 py-2 transition",
                   active === item.id
                     ? theme === "dark"
-                      ? "bg-emerald-500/20 text-emerald-200"
-                      : "bg-slate-900/5 text-slate-900"
+                      ? "bg-white/15 text-white"
+                      : "bg-[#0a0f1f]/10 text-[#0a0f1f]"
                     : theme === "dark"
-                      ? "hover:bg-white/5"
-                      : "hover:bg-slate-900/5"
+                      ? "hover:bg-white/10"
+                      : "hover:bg-[#0a0f1f]/10"
                 )}
                 aria-current={active === item.id ? "page" : undefined}
               >
@@ -207,7 +232,8 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
               </Link>
             ))}
             <Link href="/auth/sign-in" className={ctaClassName}>
-              Get Started
+              <span>Se connecter</span>
+              <LogIn className="ml-2 h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
         </div>

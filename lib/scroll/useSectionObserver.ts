@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from "react";
+import { getHeaderHeight, headerHeightEvent } from "./useHeaderHeight";
 
 interface SectionObserverOptions {
   rootMargin?: string;
@@ -12,13 +13,42 @@ interface SectionObserverResult {
   activeIndex: number;
 }
 
+const formatMargin = (top: number) => `-${Math.round(top)}px 0px 0px 0px`;
+
 export function useSectionObserver(
   sectionIds: string[],
-  { rootMargin = "0px 0px -50% 0px", threshold = [0, 0.25, 0.5, 0.75, 1] }: SectionObserverOptions = {}
+  { rootMargin, threshold = 0.6 }: SectionObserverOptions = {}
 ): SectionObserverResult {
   const [activeId, setActiveId] = useState<string | null>(sectionIds[0] ?? null);
+  const [dynamicMargin, setDynamicMargin] = useState<string>(() => formatMargin(getHeaderHeight()))
+;
 
   const ids = useMemo(() => sectionIds.filter(Boolean), [sectionIds]);
+  const resolvedRootMargin = rootMargin ?? dynamicMargin;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handler: EventListener = (event) => {
+      const custom = event as CustomEvent<{ height?: number }>;
+      if (typeof custom.detail?.height === "number") {
+        setDynamicMargin(formatMargin(custom.detail.height));
+        return;
+      }
+      setDynamicMargin(formatMargin(getHeaderHeight()));
+    };
+
+    setDynamicMargin(formatMargin(getHeaderHeight()));
+
+    window.addEventListener(headerHeightEvent, handler);
+    window.addEventListener("resize", handler);
+    return () => {
+      window.removeEventListener(headerHeightEvent, handler);
+      window.removeEventListener("resize", handler);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -51,7 +81,7 @@ export function useSectionObserver(
         const currentId = mostVisible.target.id;
         setActiveId((prevId) => (prevId === currentId ? prevId : currentId));
       },
-      { rootMargin, threshold }
+      { rootMargin: resolvedRootMargin, threshold }
     );
 
     elements.forEach((element) => observer.observe(element));
@@ -60,7 +90,7 @@ export function useSectionObserver(
       elements.forEach((element) => observer.unobserve(element));
       observer.disconnect();
     };
-  }, [ids, rootMargin, threshold]);
+  }, [ids, resolvedRootMargin, threshold]);
 
   const activeIndex = activeId ? ids.indexOf(activeId) : -1;
 

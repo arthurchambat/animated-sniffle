@@ -7,8 +7,7 @@ interface PublicLayoutProps {
 
 export default function PublicLayout({ children }: PublicLayoutProps) {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-slate-950 text-slate-100">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.22),_transparent_55%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-[#0a0f1f] text-white">
       <NavbarPublic sections={NAV_SECTIONS} />
       {children}
     </div>

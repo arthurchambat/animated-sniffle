@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { m } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 
 const plans = [
   {
@@ -46,50 +46,64 @@ const plans = [
 ];
 
 export function PricingSection() {
+  const shouldReduceMotion = useReducedMotion();
+  const motionInitial = shouldReduceMotion ? undefined : { opacity: 0.4, y: 24 };
+  const motionWhileInView = shouldReduceMotion ? undefined : { opacity: 1, y: 0 };
+  const motionTransition = shouldReduceMotion ? undefined : { duration: 0.24, ease: "easeOut" };
+
   return (
     <div className="grid gap-6 md:grid-cols-3">
-      {plans.map((plan, index) => (
-        <m.div
-          key={plan.name}
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.55, delay: index * 0.15 }}
-          className="flex h-full flex-col gap-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-emerald-500/10"
-        >
-          {plan.highlighted ? (
-            <span className="inline-flex w-fit items-center rounded-full bg-emerald-400/20 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-emerald-200">
-              Populaire
-            </span>
-          ) : null}
-          <div className="space-y-3">
-            <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
-            <p className="text-sm text-slate-300/90">{plan.description}</p>
-          </div>
-          <div className="space-y-1 text-slate-100">
-            <p className="text-3xl font-semibold">{plan.price}</p>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{plan.frequency}</p>
-          </div>
-          <ul className="flex flex-1 flex-col gap-3 text-sm text-slate-200/90">
-            {plan.features.map((feature) => (
-              <li key={feature} className="flex items-start gap-2">
-                <span aria-hidden="true" className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-300" />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href={plan.cta.href}
+      {plans.map((plan, index) => {
+        const isHighlighted = plan.highlighted;
+        return (
+          <m.div
+            key={plan.name}
+            initial={motionInitial}
+            whileInView={motionWhileInView}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={motionTransition ? { ...motionTransition, delay: index * 0.08 } : undefined}
             className={
-              plan.highlighted
-                ? "inline-flex items-center justify-center rounded-full bg-emerald-400 px-6 py-3 text-xs font-semibold uppercase tracking-[0.35em] text-slate-950 transition hover:bg-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
-                : "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-xs font-semibold uppercase tracking-[0.35em] text-slate-100 transition hover:border-emerald-300/40 hover:text-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+              isHighlighted
+                ? "flex h-full flex-col gap-6 rounded-3xl border border-white/40 bg-[#0a0f1f] p-6 text-white shadow-[0_18px_40px_rgba(10,15,31,0.3)]"
+                : "flex h-full flex-col gap-6 rounded-3xl border border-[#0a0f1f1a] bg-white/90 p-6 text-[#0a0f1f] shadow-[0_16px_35px_rgba(10,15,31,0.08)]"
             }
           >
-            {plan.cta.label}
-          </Link>
-        </m.div>
-      ))}
+            {isHighlighted ? (
+              <span className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">
+                Populaire
+              </span>
+            ) : null}
+            <div className="space-y-3">
+              <h3 className="text-xl font-semibold">{plan.name}</h3>
+              <p className={isHighlighted ? "text-sm text-white/70" : "text-sm text-[#0a0f1f]/70"}>
+                {plan.description}
+              </p>
+            </div>
+            <div className={isHighlighted ? "space-y-1 text-white" : "space-y-1 text-[#0a0f1f]"}>
+              <p className="text-3xl font-semibold">{plan.price}</p>
+              <p className="text-xs uppercase tracking-[0.3em] opacity-70">{plan.frequency}</p>
+            </div>
+            <ul className={isHighlighted ? "flex flex-1 flex-col gap-3 text-sm text-white/80" : "flex flex-1 flex-col gap-3 text-sm text-[#0a0f1f]/80"}>
+              {plan.features.map((feature) => (
+                <li key={feature} className="flex items-start gap-3">
+                  <span aria-hidden="true" className={isHighlighted ? "mt-1.5 h-1.5 w-1.5 rounded-full bg-white" : "mt-1.5 h-1.5 w-1.5 rounded-full bg-[#0a0f1f]"} />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href={plan.cta.href}
+              className={
+                isHighlighted
+                  ? "inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-xs font-semibold uppercase tracking-[0.35em] text-[#0a0f1f] transition hover:bg-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                  : "inline-flex items-center justify-center rounded-full bg-[#0a0f1f] px-6 py-3 text-xs font-semibold uppercase tracking-[0.35em] text-white transition hover:bg-[#0a0f1f]/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0a0f1f]/60"
+              }
+            >
+              {plan.cta.label}
+            </Link>
+          </m.div>
+        );
+      })}
     </div>
   );
 }

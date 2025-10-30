@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
+import { FinanceLogoMark } from "@/components/branding/FinanceLogoMark";
 import { cn } from "@/lib/cn";
+import { getHeaderHeight } from "@/lib/scroll/useHeaderHeight";
 
 export interface NavbarClientUser {
   id: string;
@@ -35,6 +37,13 @@ const APP_LINKS = [
   { href: "/team", label: "Équipe" }
 ] as const;
 
+const resolveScrollBehavior = () => {
+  if (typeof window === "undefined") {
+    return "auto" as const;
+  }
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? ("auto" as const) : ("smooth" as const);
+};
+
 export function NavbarClient({ mode, user }: NavbarClientProps) {
   const [isScrolled, setScrolled] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -56,10 +65,22 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
     (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
       if (href.startsWith("#")) {
         event.preventDefault();
+        if (typeof window === "undefined") {
+          return;
+        }
         const targetId = href.slice(1);
         const section = document.getElementById(targetId);
         if (section) {
-          section.scrollIntoView({ behavior: "smooth", block: "start" });
+          const scroller = document.querySelector('[data-page-scroller="true"]');
+          const behavior = resolveScrollBehavior();
+          const headerOffset = getHeaderHeight();
+
+          if (scroller instanceof HTMLElement) {
+            const top = section.getBoundingClientRect().top + scroller.scrollTop - headerOffset;
+            scroller.scrollTo({ top, behavior });
+          } else {
+            section.scrollIntoView({ behavior, block: "start" });
+          }
         }
         return;
       }
@@ -95,7 +116,7 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
     : null;
 
   const ctaHref = user ? "/home" : "/auth/sign-in";
-  const ctaLabel = user ? "Accéder à l'app" : "Get Started";
+  const ctaLabel = user ? "Accéder à l'app" : "Se connecter";
 
   const links = mode === "public" ? PUBLIC_LINKS : APP_LINKS;
 
@@ -104,28 +125,26 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
       <div
         className={cn(
           "mx-auto flex w-full max-w-6xl items-center justify-between rounded-full border px-5 py-3 transition-all duration-300",
-          "border-white/10 bg-slate-900/60 backdrop-blur-xl",
-          isScrolled && "border-white/15 bg-slate-950/85 shadow-lg shadow-emerald-500/15"
+          "border-white/15 bg-[#0a0f1f]/70 backdrop-blur-xl",
+          isScrolled && "border-white/20 bg-[#0a0f1f]/85 shadow-[0_18px_40px_rgba(10,15,31,0.35)]"
         )}
         role="navigation"
         aria-label="Navigation principale"
       >
-        <Link href="/" className="flex items-center gap-3 text-sm font-semibold text-slate-100">
-          <span className="finance-gradient flex h-9 w-9 items-center justify-center rounded-lg text-base text-white shadow-lg shadow-emerald-500/20">
-            FB
-          </span>
-          <span className="hidden sm:inline">FinanceBro</span>
+        <Link href="/" className="flex items-center gap-3 text-sm font-semibold text-white">
+          <FinanceLogoMark />
+          <span className="hidden sm:inline text-base">FinanceBro</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-200 lg:flex">
+        <nav className="hidden items-center gap-6 text-sm font-medium text-white lg:flex">
           {links.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
               onClick={(event) => handleLinkClick(event, href)}
               className={cn(
-                "relative py-1 transition-colors hover:text-emerald-300 focus-visible:outline-none focus-visible:text-emerald-300",
-                pathname === href && !href.startsWith("#") && "text-emerald-300"
+                "relative py-1 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:opacity-100",
+                pathname === href && !href.startsWith("#") && "opacity-100 font-semibold"
               )}
             >
               {label}
@@ -134,9 +153,10 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
           <Link
             href={ctaHref}
             onClick={(event) => handleLinkClick(event, ctaHref)}
-            className="inline-flex items-center rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-950 transition hover:bg-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+            className="inline-flex items-center rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#0a0f1f] transition hover:bg-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
           >
-            {ctaLabel}
+            <span>{ctaLabel}</span>
+            {!user ? <LogIn className="ml-2 h-4 w-4" aria-hidden="true" /> : null}
           </Link>
         </nav>
 
@@ -145,7 +165,7 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
             <Link
               href="/home"
               onClick={(event) => handleLinkClick(event, "/home")}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-sm font-semibold text-emerald-200"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-sm font-semibold text-white"
               aria-label="Accéder à l'accueil"
             >
               {initials}
@@ -154,7 +174,7 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-slate-100 hover:border-white/20 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:border-white/30 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             aria-label={isMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -163,8 +183,8 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
       </div>
 
       {isMenuOpen ? (
-        <div className="mx-auto mt-3 w-full max-w-6xl rounded-3xl border border-white/10 bg-slate-950/90 p-6 shadow-2xl backdrop-blur-xl lg:hidden">
-          <div className="flex flex-col gap-4 text-sm font-semibold text-slate-200">
+        <div className="mx-auto mt-3 w-full max-w-6xl rounded-3xl border border-white/20 bg-[#0a0f1f]/90 p-6 shadow-2xl backdrop-blur-xl lg:hidden">
+          <div className="flex flex-col gap-4 text-sm font-semibold text-white">
             {links.map(({ href, label }) => (
               <Link
                 key={href}
@@ -173,7 +193,7 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
                   handleLinkClick(event, href);
                   setMenuOpen(false);
                 }}
-                className="rounded-full px-4 py-2 transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+                className="rounded-full px-4 py-2 transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
               >
                 {label}
               </Link>
@@ -184,18 +204,19 @@ export function NavbarClient({ mode, user }: NavbarClientProps) {
                 handleLinkClick(event, ctaHref);
                 setMenuOpen(false);
               }}
-              className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-4 py-3 text-xs uppercase tracking-wide text-slate-950 transition hover:bg-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+              className="inline-flex items-center justify-center rounded-full bg-white px-4 py-3 text-xs font-semibold text-[#0a0f1f] transition hover:bg-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
             >
-              {ctaLabel}
+              <span>{ctaLabel}</span>
+              {!user ? <LogIn className="ml-2 h-4 w-4" aria-hidden="true" /> : null}
             </Link>
             {mode === "app" && user ? (
-              <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-semibold text-emerald-100">
+              <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 p-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-semibold text-white">
                   {initials}
                 </div>
-                <div className="text-xs text-slate-300">
-                  <p className="font-semibold text-slate-100">{user.firstName ?? "Membre"}</p>
-                  <p className="uppercase tracking-wide text-emerald-200/80">{user.plan ?? "free"}</p>
+                <div className="text-xs text-white/70">
+                  <p className="font-semibold text-white">{user.firstName ?? "Membre"}</p>
+                  <p className="uppercase tracking-wide text-white/70">{user.plan ?? "free"}</p>
                 </div>
               </div>
             ) : null}
