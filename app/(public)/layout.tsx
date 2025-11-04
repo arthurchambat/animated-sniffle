@@ -8,6 +8,7 @@ interface PublicLayoutProps {
 export default function PublicLayout({ children }: PublicLayoutProps) {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0a0f1f] text-white">
+      {/* Navbar toujours blanche en position sticky */}
       <NavbarPublic sections={NAV_SECTIONS} />
       {children}
     </div>

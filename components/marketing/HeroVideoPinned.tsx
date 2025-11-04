@@ -38,7 +38,7 @@ export function HeroVideoPinned({ ctaHref }: HeroVideoPinnedProps) {
   }, [preferStatic, shouldReduceMotion]);
 
   return (
-    <div className="relative isolate flex h-full w-full flex-col justify-center overflow-hidden bg-[#0a0f1f]">
+    <div className="absolute inset-0 flex h-dvh w-full flex-col justify-center overflow-hidden bg-[#0a0f1f]">
       {!preferStatic && !shouldReduceMotion ? (
         <video
           ref={videoRef}
@@ -49,21 +49,21 @@ export function HeroVideoPinned({ ctaHref }: HeroVideoPinnedProps) {
           loop
           playsInline
           poster="/images/hero-poster.svg"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 z-0 h-full min-h-full w-full min-w-full object-cover"
           style={{ filter: "grayscale(100%)" }}
           aria-hidden="true"
         />
       ) : null}
 
-      <div className="absolute inset-0 bg-[#0a0f1f]/80" aria-hidden="true" />
+      <div className="absolute inset-0 z-[5] bg-[#0a0f1f]/70" aria-hidden="true" />
 
       {preferStatic || shouldReduceMotion ? (
-        <div className="absolute inset-0" aria-hidden="true">
+        <div className="absolute inset-0 z-0" aria-hidden="true">
           <Image src="/images/hero-poster.svg" alt="" fill priority className="object-cover" />
         </div>
       ) : null}
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16 md:px-10 md:py-24 xl:px-16">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16 md:px-10 md:py-24 xl:px-16">{/* Contenu au-dessus de la vidéo */}
         <m.span
           initial={motionInitial}
           animate={motionAnimate}

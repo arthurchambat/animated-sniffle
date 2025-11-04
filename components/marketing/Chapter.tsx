@@ -27,20 +27,21 @@ export function Chapter({
   const isCenter = align === "center";
   const isDark = variant === "dark";
 
+  // TOUJOURS blanc sur fond bleu foncé (toutes les sections ont bg-[#0a0f1f])
   const containerClass = cn(
     "mx-auto flex w-full max-w-5xl flex-col gap-8",
     isCenter ? "items-center text-center" : "items-start text-left",
-    isDark ? "text-white" : "text-[#0a0f1f]"
+    "text-white" // Toujours blanc
   );
 
   const eyebrowClass = cn(
     "text-xs font-semibold uppercase tracking-[0.35em]",
-    isDark ? "text-white/70" : "text-[#0a0f1f]/70"
+    "text-white/70" // Toujours blanc semi-transparent
   );
 
   const descriptionClass = cn(
     "text-base md:text-lg",
-    isDark ? "text-white/70" : "text-[#0a0f1f]/70",
+    "text-white/70", // Toujours blanc semi-transparent
     isCenter ? "mx-auto max-w-2xl" : "max-w-2xl"
   );
 

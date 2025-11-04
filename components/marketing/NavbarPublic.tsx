@@ -138,18 +138,20 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
       cn(
         "fixed left-1/2 z-[60] flex w-[min(960px,92vw)] -translate-x-1/2 items-center justify-between rounded-full border px-5 py-3 backdrop-blur-xl",
         "transition-all duration-300 ease-in-out",
-        THEME_CLASSES[theme],
+        // NAVBAR TOUJOURS BLANCHE - ne change jamais de thème
+        "bg-white text-[#0a0f1f] border-[#0a0f1f]/10",
         isScrolled
           ? "shadow-[0_18px_40px_rgba(10,15,31,0.35)]"
           : "shadow-[0_12px_24px_rgba(10,15,31,0.18)]",
         isVisible ? "top-6 translate-y-0 opacity-100" : "-top-24 -translate-y-full opacity-0"
       ),
-    [theme, isScrolled, isVisible]
+    [isScrolled, isVisible]
   );
 
+  // CTA toujours avec style light (fond sombre sur navbar blanche)
   const ctaClassName = cn(
     "inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2",
-    CTA_CLASSES[theme]
+    "bg-[#0a0f1f] text-white hover:bg-[#0a0f1f]/90 focus-visible:ring-[#0a0f1f]/40"
   );
 
   return (
@@ -187,9 +189,8 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
             onClick={() => setMenuOpen((open) => !open)}
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2",
-              theme === "dark"
-                ? "border-white/20 bg-white/10 text-white focus-visible:ring-white/40"
-                : "border-[#0a0f1f1a] bg-white text-[#0a0f1f] focus-visible:ring-[#0a0f1f]/20"
+              // Bouton menu toujours style light (navbar blanche)
+              "border-[#0a0f1f]/10 bg-[#0a0f1f]/5 text-[#0a0f1f] focus-visible:ring-[#0a0f1f]/20"
             )}
             aria-expanded={isMenuOpen}
             aria-controls="navbar-public-menu"
@@ -205,9 +206,8 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
           id="navbar-public-menu"
           className={cn(
             "fixed inset-x-4 top-[88px] z-[55] rounded-3xl border p-6 shadow-2xl backdrop-blur-xl lg:hidden",
-            theme === "dark"
-              ? "border-white/20 bg-[#0a0f1f]/90 text-white"
-              : "border-[#0a0f1f1a] bg-white/95 text-[#0a0f1f]"
+            // Menu mobile toujours blanc
+            "border-[#0a0f1f]/10 bg-white/95 text-[#0a0f1f]"
           )}
         >
           <div className="flex flex-col gap-4 text-sm font-semibold">
@@ -219,12 +219,8 @@ export function NavbarPublic({ sections }: NavbarPublicProps) {
                 className={cn(
                   "rounded-full px-4 py-2 transition",
                   active === item.id
-                    ? theme === "dark"
-                      ? "bg-white/15 text-white"
-                      : "bg-[#0a0f1f]/10 text-[#0a0f1f]"
-                    : theme === "dark"
-                      ? "hover:bg-white/10"
-                      : "hover:bg-[#0a0f1f]/10"
+                    ? "bg-[#0a0f1f]/10 text-[#0a0f1f]"
+                    : "hover:bg-[#0a0f1f]/10"
                 )}
                 aria-current={active === item.id ? "page" : undefined}
               >
