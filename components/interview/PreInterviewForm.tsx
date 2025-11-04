@@ -93,6 +93,9 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
   } = useForm<PreInterviewFormData>({
     resolver: zodResolver(preInterviewSchema),
     defaultValues: {
+      title: "",
+      company: "",
+      role: "",
       duration_minutes: 30,
       focus_areas: [],
     },
@@ -223,6 +226,7 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
                 </label>
                 <input
                   {...field}
+                  value={field.value ?? ""}
                   list="companies"
                   placeholder="Sélectionner ou saisir"
                   className="w-full rounded-(--radius) border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-200"
@@ -247,6 +251,7 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
                 </label>
                 <input
                   {...field}
+                  value={field.value ?? ""}
                   list="roles"
                   placeholder="Sélectionner ou saisir"
                   className="w-full rounded-(--radius) border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-200"

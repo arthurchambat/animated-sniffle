@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "sessionId requis" }, { status: 400 });
   }
 
-  const openai = getOpenAIClient();
+  const openai = await getOpenAIClient();
   const supabase = getSupabaseAdminClient();
 
   const transcriptText = transcript

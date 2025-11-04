@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Partial<SuggestBody>;
   const { domain = "market_finance", role = "sales_trading", level = "analyst" } = body;
 
-  const openai = getOpenAIClient();
+  const openai = await getOpenAIClient();
 
   if (!openai) {
     return NextResponse.json(

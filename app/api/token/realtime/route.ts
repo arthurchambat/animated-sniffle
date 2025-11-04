@@ -4,7 +4,7 @@ import { getOpenAIClient } from "@/lib/openai";
 export const runtime = "nodejs";
 
 export async function POST() {
-  const openai = getOpenAIClient();
+  const openai = await getOpenAIClient();
 
   if (!openai) {
     return NextResponse.json(

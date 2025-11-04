@@ -4,7 +4,7 @@ import OpenAI from "openai";
 
 let openai: OpenAI | null = null;
 
-export function getOpenAIClient(): OpenAI | null {
+export async function getOpenAIClient(): Promise<OpenAI | null> {
   if (openai) {
     return openai;
   }
