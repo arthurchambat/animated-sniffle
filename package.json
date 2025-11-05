@@ -10,18 +10,25 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@livekit/agents": "^1.0.15",
+    "@livekit/agents-plugin-bey": "^1.0.5",
+    "@livekit/agents-plugin-openai": "^1.0.15",
+    "@livekit/components-react": "^2.9.15",
+    "@livekit/rtc-node": "^0.13.20",
     "@supabase/ssr": "^0.4.0",
     "@supabase/supabase-js": "^2.46.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "12.23.24",
+    "lenis": "^1.1.13",
+    "livekit-client": "^2.15.14",
+    "livekit-server-sdk": "^2.14.0",
     "lucide-react": "^0.402.0",
     "next": "^16.0.0",
     "openai": "^4.57.0",
-    "lenis": "^1.1.13",
-    "react-hook-form": "^7.53.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.53.1",
     "recharts": "^2.12.5",
     "sonner": "^1.7.3",
     "tailwind-merge": "^2.5.2",
@@ -29,12 +36,11 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@hookform/resolvers": "^3.9.1",
     "@tailwindcss/postcss": "^4.1.16",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
-    "@hookform/resolvers": "^3.9.1",
-    "zod": "^3.23.8",
     "@types/node": "^22.10.1",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
@@ -45,6 +51,7 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^4.1.16",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "zod": "^3.23.8"
   }
 }

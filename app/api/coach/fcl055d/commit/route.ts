@@ -17,7 +17,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Session inconnue." }, { status: 404 });
   }
 
-  entry.service.commitAudio();
-
-  return NextResponse.json({ ok: true }, { status: 200 });
+  try {
+    await entry.service.commitAudio();
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (error) {
+    console.error("FCL055d commit error", error);
+    return NextResponse.json(
+      { error: "Impossible de valider le buffer audio (coach déconnecté)." },
+      { status: 500 }
+    );
+  }
 }

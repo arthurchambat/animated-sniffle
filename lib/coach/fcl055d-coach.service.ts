@@ -53,15 +53,26 @@ class Fcl055dHooks implements CoachHooks {
 
   shouldEnd(ctx: SessionContext): boolean {
     const userTurns = ctx.transcript.filter((t) => t.role === "user").length;
+    const coachTurns = ctx.transcript.filter((t) => t.role === "coach").length;
     const last = ctx.transcript.at(-1);
-    const shouldEnd =
-      userTurns >= 5 ||
-      (last?.role === "user" && /stop|fin|merci|thanks|thank you/i.test(last.text));
+
+    const explicitStop =
+      last?.role === "user" &&
+      /(stop|enough|finish|terminate|end (the )?session|thank you so much|thanks for your time|good\s?bye)/i.test(
+        last.text ?? ""
+      );
+
+    const reachedTurnBudget = userTurns >= 12 && coachTurns >= 12;
+
+    const shouldEnd = explicitStop || reachedTurnBudget;
 
     console.log("🔍 shouldEnd check:", {
       userTurns,
+      coachTurns,
       lastRole: last?.role,
       lastText: last?.text,
+      explicitStop,
+      reachedTurnBudget,
       shouldEnd
     });
 
@@ -168,14 +179,14 @@ export class Fcl055dCoachService extends BaseCoachService {
       role: "voice-coach",
       systemPrompt: fcl055dCoachPrompt,
       greeting:
-        "Please speak for 1 to 2 minutes about your aviation background, current role, training, and goals.",
+        "Let's dive into your finance background. Start by walking me through a recent deal, trade, or portfolio decision you're proud of—highlight the rationale, data you used, and the outcome.",
       model: "gpt-4o-realtime-preview-2024-10-01",
-      voice: "echo",
-      temperature: 0.8,
+      voice: "alloy",
+      temperature: 0.6,
       audioProcessing: {
-        commitIntervalFrames: 999999,
-        silenceFlushFrames: 8,
-        silenceDelayMs: 1000
+        commitIntervalFrames: 4800,
+        silenceFlushFrames: 4,
+        silenceDelayMs: 750
       }
     };
 

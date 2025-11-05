@@ -4,6 +4,26 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const REALTIME_SAMPLE_RATE = 24000;
+const MIN_COMMIT_DURATION_MS = 320;
+const MAX_COMMIT_INTERVAL_MS = 1200;
+
+const estimatePcm16DurationMs = (base64: string): number => {
+  if (!base64) return 0;
+  const cleanLength = base64.length;
+  if (cleanLength === 0) return 0;
+
+  let padding = 0;
+  if (base64.endsWith("==")) padding = 2;
+  else if (base64.endsWith("=")) padding = 1;
+
+  const bytes = (cleanLength / 4) * 3 - padding;
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return 0;
+  }
+
+  const samples = bytes / 2;
+  return (samples / REALTIME_SAMPLE_RATE) * 1000;
+};
 
 type SpeakerRole = "candidate" | "coach";
 
@@ -35,7 +55,7 @@ interface UseRealtimeCoachReturn {
   startTime: number | null;
   endTime: number | null;
   setMuted(next: boolean): void;
-  startSession(): Promise<{ ok: boolean; error?: string }>;
+  startSession(): Promise<{ ok: boolean; error?: string; sessionId?: string }>;
   finalizeSession(origin?: "manual" | "auto"): Promise<{ ok: boolean; error?: string }>;
   sendText(text: string): Promise<{ ok: boolean; error?: string }>;
 }
@@ -120,6 +140,10 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
   const micSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const micGainRef = useRef<GainNode | null>(null);
   const audioUploadQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const audioBufferStateRef = useRef<{ bufferedMs: number; lastCommitTs: number }>({
+    bufferedMs: 0,
+    lastCommitTs: 0
+  });
   const sessionIdRef = useRef<string | null>(null);
   const audioErrorNotifiedRef = useRef<boolean>(false);
   const playbackContextRef = useRef<AudioContext | null>(null);
@@ -172,6 +196,46 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
     }
   }, []);
 
+  const commitBufferedAudio = useCallback(
+    async (session: string, reason: "threshold" | "flush") => {
+      if (!session) return;
+
+      const response = await fetch("/api/coach/fcl055d/commit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: session })
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const message = typeof payload?.error === "string" ? payload.error : "Échec du commit audio";
+
+        if (/conversation_already_has_active_response/i.test(message)) {
+          console.warn(`Commit différé: réponse déjà en cours (${reason})`);
+          const state = audioBufferStateRef.current;
+          state.bufferedMs = 0;
+          state.lastCommitTs = Date.now();
+          return;
+        }
+
+        if (/buffer too small/i.test(message)) {
+          const state = audioBufferStateRef.current;
+          console.warn(
+            `Commit ignoré (buffer insuffisant, tampon ≈${state.bufferedMs.toFixed(0)}ms, raison: ${reason})`
+          );
+          return;
+        }
+
+        throw new Error(message);
+      }
+
+      const state = audioBufferStateRef.current;
+      state.bufferedMs = 0;
+      state.lastCommitTs = Date.now();
+    },
+    []
+  );
+
   const enqueueAudioChunk = useCallback((id: string, base64: string) => {
     if (!id || !base64) return;
 
@@ -189,20 +253,42 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
 
           if (!audioRes.ok) {
             const payload = await audioRes.json().catch(() => ({}));
-            throw new Error(payload?.error ?? "Échec de l'envoi audio");
+            const message = typeof payload?.error === "string" ? payload.error : "Échec de l'envoi audio";
+
+            if (/coach non connecté|session inconnue/i.test(message)) {
+              throw new Error(message);
+            }
+
+            console.warn("Append audio ignoré:", message);
+            return;
           }
 
-          const commitRes = await fetch("/api/coach/fcl055d/commit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sessionId: id })
-          });
+          const chunkDuration = estimatePcm16DurationMs(base64);
+          const state = audioBufferStateRef.current;
+          state.bufferedMs += chunkDuration;
 
-          if (!commitRes.ok) {
-            const payload = await commitRes.json().catch(() => ({}));
-            throw new Error(payload?.error ?? "Échec du commit audio");
+          const now = Date.now();
+          if (state.lastCommitTs === 0) {
+            state.lastCommitTs = now;
+          }
+
+          const elapsed = now - state.lastCommitTs;
+          const shouldCommit =
+            state.bufferedMs >= MIN_COMMIT_DURATION_MS ||
+            elapsed >= MAX_COMMIT_INTERVAL_MS;
+
+          if (shouldCommit) {
+            await commitBufferedAudio(id, "threshold");
           }
         } catch (error) {
+          if (
+            error instanceof Error &&
+            /conversation_already_has_active_response|buffer too small/i.test(error.message)
+          ) {
+            console.warn("Avertissement audio coach:", error.message);
+            return;
+          }
+
           console.error("Erreur d'envoi audio vers le coach", error);
           if (!audioErrorNotifiedRef.current) {
             audioErrorNotifiedRef.current = true;
@@ -210,7 +296,32 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
           }
         }
       });
-  }, []);
+  }, [commitBufferedAudio]);
+
+  const flushBufferedAudio = useCallback(
+    async (id: string | null) => {
+      if (!id) return;
+
+      audioUploadQueueRef.current = audioUploadQueueRef.current
+        .catch(() => {
+          /* ignore previous error to keep chain alive */
+        })
+        .then(async () => {
+          if (audioBufferStateRef.current.bufferedMs <= 0) {
+            return;
+          }
+
+          try {
+            await commitBufferedAudio(id, "flush");
+          } catch (error) {
+            console.warn("Flush audio impossible", error);
+          }
+        });
+
+      await audioUploadQueueRef.current;
+    },
+    [commitBufferedAudio]
+  );
 
   const startMicrophoneCapture = useCallback(
     async (id: string) => {
@@ -317,6 +428,7 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
     setSessionId(null);
     sessionIdRef.current = null;
     audioUploadQueueRef.current = Promise.resolve();
+    audioBufferStateRef.current = { bufferedMs: 0, lastCommitTs: 0 };
     audioErrorNotifiedRef.current = false;
     if (audioContextRef.current) {
       audioContextRef.current.close().catch(() => {
@@ -343,6 +455,8 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
       stopMicrophoneCapture();
       finalizingRef.current = true;
       setStatus("ending");
+
+      await flushBufferedAudio(currentId);
 
       try {
         const response = await fetch("/api/coach/fcl055d/end", {
@@ -402,9 +516,11 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
         return { ok: false, error: error instanceof Error ? error.message : String(error) };
       } finally {
         finalizingRef.current = false;
+        audioBufferStateRef.current = { bufferedMs: 0, lastCommitTs: 0 };
+        audioUploadQueueRef.current = Promise.resolve();
       }
     },
-    [cleanupEventSource, options, sessionId, stopMicrophoneCapture]
+    [cleanupEventSource, flushBufferedAudio, options, sessionId, stopMicrophoneCapture]
   );
 
   const handleCoachEvent = useCallback(
@@ -510,6 +626,11 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
 
       attachEventStream(newSessionId);
 
+      audioBufferStateRef.current = {
+        bufferedMs: 0,
+        lastCommitTs: Date.now()
+      };
+
       const micStarted = await startMicrophoneCapture(newSessionId);
       if (!micStarted) {
         toast.message("Coach en mode texte", {
@@ -524,7 +645,7 @@ export function useRealtimeCoach(options?: UseRealtimeCoachOptions): UseRealtime
         description: "Coach IA connecté, transcript en direct."
       });
 
-      return { ok: true };
+      return { ok: true, sessionId: newSessionId };
     } catch (error) {
       console.error(error);
       toast.error("Impossible de démarrer la session.", {

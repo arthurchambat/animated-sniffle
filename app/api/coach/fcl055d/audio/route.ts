@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    entry.service.sendAudio(audio);
+    await entry.service.sendAudio(audio);
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {
     console.error("FCL055d audio error", error);

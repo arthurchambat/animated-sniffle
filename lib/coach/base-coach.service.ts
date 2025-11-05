@@ -40,6 +40,7 @@ export class BaseCoachService {
   protected readonly ctx: SessionContext;
   protected readonly feedback: FeedbackStrategy;
   protected isResponseInProgress = false;
+  protected hasPendingResponseRequest = false;
 
   constructor(
     apiKey: string,
@@ -62,6 +63,21 @@ export class BaseCoachService {
     });
   }
 
+  protected requestResponseCreation(): void {
+    if (this.isResponseInProgress) {
+      this.hasPendingResponseRequest = true;
+      return;
+    }
+
+    this.hasPendingResponseRequest = false;
+
+    try {
+      this.realtime.send({ type: "response.create" });
+    } catch (err) {
+      console.error("BaseCoachService response.create error:", err);
+    }
+  }
+
   getAudioProcessingConfig() {
     return {
       commitIntervalFrames: this.cfg.audioProcessing?.commitIntervalFrames ?? 999999,
@@ -81,6 +97,9 @@ export class BaseCoachService {
           this.isResponseInProgress = true;
         } else if (message.type === "response.done") {
           this.isResponseInProgress = false;
+          if (this.hasPendingResponseRequest) {
+            this.requestResponseCreation();
+          }
         }
 
         if (this.hooks.onOAIRawEvent) {
@@ -93,23 +112,52 @@ export class BaseCoachService {
 
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    if (!this.isResponseInProgress) {
-      this.realtime.send({ type: "response.create" });
+    this.requestResponseCreation();
+  }
+
+  protected async ensureRealtimeConnection(): Promise<void> {
+    try {
+      await this.realtime.ensureConnected();
+    } catch (err) {
+      console.error("BaseCoachService ensureRealtimeConnection error:", err);
+      throw err;
     }
   }
 
-  sendAudio(audioBase64: string): void {
-    this.realtime.sendAudio(audioBase64);
+  async sendAudio(audioBase64: string): Promise<void> {
+    if (!audioBase64) return;
+
+    try {
+      await this.ensureRealtimeConnection();
+      this.realtime.sendAudio(audioBase64);
+    } catch (err) {
+      console.error("BaseCoachService sendAudio error:", err);
+      throw err;
+    }
   }
 
-  commitAudio(): void {
-    this.realtime.commitAudio();
+  async commitAudio(): Promise<void> {
+    try {
+      await this.ensureRealtimeConnection();
+      this.realtime.commitAudio();
+    } catch (err) {
+      console.error("BaseCoachService commitAudio error:", err);
+      throw err;
+    }
+    this.requestResponseCreation();
   }
 
   async sendUserText(text: string): Promise<void> {
     this.pushUser(text);
     await this.hooks.onUserText?.(text, this.ctx);
-    await this.realtime.sendText(text);
+    try {
+      await this.ensureRealtimeConnection();
+      await this.realtime.sendText(text);
+      this.requestResponseCreation();
+    } catch (err) {
+      console.error("BaseCoachService sendUserText error:", err);
+      throw err;
+    }
   }
 
   async shouldEnd(): Promise<boolean> {

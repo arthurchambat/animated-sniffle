@@ -84,6 +84,17 @@ export class RealtimeAPIService {
     });
   }
 
+  isReady(): boolean {
+    return this.socket?.readyState === WebSocket.OPEN;
+  }
+
+  async ensureConnected(): Promise<void> {
+    if (this.isReady()) {
+      return;
+    }
+    await this.connect();
+  }
+
   onMessage(handler: MessageHandler): void {
     this.listeners.push(handler);
   }
@@ -105,7 +116,6 @@ export class RealtimeAPIService {
 
   commitAudio(): void {
     this.send({ type: "input_audio_buffer.commit" });
-    this.send({ type: "response.create" });
   }
 
   async sendText(text: string): Promise<void> {
@@ -124,8 +134,6 @@ export class RealtimeAPIService {
         ]
       }
     });
-
-    this.send({ type: "response.create" });
   }
 
   disconnect(): void {
