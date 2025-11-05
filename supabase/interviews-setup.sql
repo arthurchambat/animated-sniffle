@@ -139,6 +139,17 @@ WITH CHECK (
   )
 );
 
+CREATE POLICY "Users can delete feedback for their sessions"
+ON interview_feedback FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM interview_sessions
+    WHERE interview_sessions.id = interview_feedback.session_id
+    AND interview_sessions.user_id = auth.uid()
+  )
+);
+
 -- ============================================================================
 -- STORAGE: Bucket pour interviews
 -- ============================================================================

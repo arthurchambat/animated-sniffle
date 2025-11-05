@@ -8,9 +8,9 @@ import type { InterviewSession } from "@/lib/types/interview";
 export default async function LiveInterviewPage({
   params,
 }: {
-  params: Promise<{ sessionId: string }>;
+  params: { sessionId: string };
 }) {
-  const { sessionId } = await params;
+  const { sessionId } = params;
   const user = await getCurrentUser();
 
   if (!user) {

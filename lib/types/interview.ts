@@ -43,13 +43,23 @@ export interface InterviewFeedback {
   id: string;
   session_id: string;
   general: string | null;
-  went_well: string[];
-  to_improve: string[];
-  per_question: QuestionFeedback[];
+  went_well: string[] | null;
+  to_improve: string[] | null;
+  per_question: QuestionFeedback[] | null;
+  focus_areas: string[] | null;
   score_overall: number | null; // 0-100
   created_at: string;
 }
 
 export interface SessionWithFeedback extends InterviewSession {
   feedback?: InterviewFeedback;
+}
+
+export interface InterviewRecentStats {
+  user_id: string;
+  total_sessions: number;
+  total_feedbacks: number;
+  average_score: number | null;
+  last_completed_session: string | null;
+  last_feedback_date: string | null;
 }

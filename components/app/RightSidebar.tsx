@@ -37,8 +37,8 @@ export function RightSidebar() {
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200",
               isActive
-                ? "bg-emerald-500/10 text-emerald-200 shadow-sm border border-emerald-400/20"
-                : "text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent"
+                ? "bg-white/10 text-white shadow-sm border border-white/20"
+                : "text-white/60 hover:bg-white/5 hover:text-white border border-transparent"
             )}
             title={!isExpanded ? link.label : undefined}
           >
@@ -71,7 +71,7 @@ export function RightSidebar() {
       {/* Desktop Sidebar - Left, Collapsable with hover expand */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col shrink-0 sticky top-6 h-[calc(100vh-3rem)] border-r border-white/10 bg-slate-950/50 backdrop-blur-sm transition-all duration-300 ease-in-out rounded-xl overflow-hidden",
+          "hidden lg:flex flex-col shrink-0 sticky top-6 h-[calc(100vh-3rem)] border-r border-white/15 bg-white/5 backdrop-blur-sm transition-all duration-300 ease-in-out rounded-xl overflow-hidden",
           isExpanded ? "w-64" : "w-20"
         )}
         aria-label="Barre latérale de navigation"
@@ -82,12 +82,12 @@ export function RightSidebar() {
           {/* Header with collapse toggle */}
           <div className={cn("flex items-center mb-6", isExpanded ? "justify-between" : "justify-center")}>
             {isExpanded && (
-              <h2 className="text-lg font-semibold text-slate-100 truncate">FinanceBro</h2>
+              <h2 className="text-lg font-semibold text-white truncate">FinanceBro</h2>
             )}
             <button
               onClick={() => setCollapsed(!collapsed)}
               className={cn(
-                "rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-colors",
+                "rounded-lg p-2 text-white/60 hover:bg-white/5 hover:text-white transition-colors",
                 !isExpanded && "mx-auto"
               )}
               aria-label={collapsed ? "Étendre la sidebar" : "Réduire la sidebar"}
@@ -112,7 +112,7 @@ export function RightSidebar() {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "w-full justify-center gap-2 text-slate-300 hover:bg-white/5 hover:text-emerald-200",
+                  "w-full justify-center gap-2 text-white/70 hover:bg-white/5 hover:text-white",
                   !isExpanded && "px-2"
                 )}
                 onClick={handleLogout}
@@ -125,7 +125,7 @@ export function RightSidebar() {
 
             {!isExpanded && (
               <div className="mt-4 flex justify-center">
-                <div className="h-1 w-6 rounded-full bg-slate-700" />
+                <div className="h-1 w-6 rounded-full bg-white/20" />
               </div>
             )}
           </div>
@@ -153,12 +153,12 @@ export function RightSidebar() {
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
-          <div className="lg:hidden fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r border-white/10 bg-slate-950 shadow-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-white/10">
-              <h2 className="text-lg font-semibold text-slate-100">FinanceBro</h2>
+          <div className="lg:hidden fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r border-white/15 bg-[#0a0f1f] shadow-2xl">
+            <div className="flex items-center justify-between p-6 border-b border-white/15">
+              <h2 className="text-lg font-semibold text-white">FinanceBro</h2>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-colors"
+                className="rounded-lg p-2 text-white/60 hover:bg-white/5 hover:text-white transition-colors"
                 aria-label="Fermer le menu"
               >
                 <X className="h-5 w-5" />

@@ -16,9 +16,9 @@ export default async function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(79,216,167,0.25),_transparent_60%)]" />
-      <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen bg-[#0a0f1f] text-white">
+      {/* Navbar blanche sticky en haut - à ajouter via NavbarApp */}
+      <div className="mx-auto max-w-[1600px] px-6 py-10 md:px-10 md:py-14 xl:px-16">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[auto_1fr] lg:gap-8">
           <RightSidebar />
 

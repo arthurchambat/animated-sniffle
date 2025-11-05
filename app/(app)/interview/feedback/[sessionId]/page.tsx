@@ -9,9 +9,9 @@ import type { InterviewSession, InterviewFeedback } from "@/lib/types/interview"
 export default async function FeedbackPage({
   params,
 }: {
-  params: Promise<{ sessionId: string }>;
+  params: { sessionId: string };
 }) {
-  const { sessionId } = await params;
+  const { sessionId } = params;
   const user = await getCurrentUser();
 
   if (!user) {
@@ -73,6 +73,7 @@ export default async function FeedbackPage({
 
       <FeedbackView
         feedback={typedFeedback}
+        sessionId={sessionId}
         sessionTitle={typedSession.title}
         company={typedSession.company}
         role={typedSession.role}

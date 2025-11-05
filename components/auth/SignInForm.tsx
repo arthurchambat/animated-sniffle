@@ -19,7 +19,7 @@ const signInSchema = z.object({
 type SignInValues = z.infer<typeof signInSchema>;
 
 const inputClass =
-  "w-full rounded-[var(--radius)] border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-200";
+  "w-full rounded-[var(--radius)] border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm transition-all";
 
 export function SignInForm() {
   const router = useRouter();
@@ -106,7 +106,7 @@ export function SignInForm() {
     <div className="grid gap-8">
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
         <div className="grid gap-2">
-          <label className="text-sm font-medium text-slate-200" htmlFor="signin-email">
+          <label className="text-sm font-medium text-white" htmlFor="signin-email">
             Email ou nom d'utilisateur
           </label>
           <input
@@ -114,7 +114,7 @@ export function SignInForm() {
             type="text"
             autoComplete="email"
             placeholder="prenom@banque.com"
-            className={cn(inputClass, errors.email && "border-rose-400/70 focus:ring-rose-200")}
+            className={cn(inputClass, errors.email && "border-rose-400/70 focus:border-rose-400 focus:ring-rose-400/30")}
             {...register("email")}
           />
           {errors.email ? (
@@ -123,7 +123,7 @@ export function SignInForm() {
         </div>
 
         <div className="grid gap-2">
-          <label className="text-sm font-medium text-slate-200" htmlFor="signin-password">
+          <label className="text-sm font-medium text-white" htmlFor="signin-password">
             Mot de passe
           </label>
           <input
@@ -131,7 +131,7 @@ export function SignInForm() {
             type="password"
             autoComplete="current-password"
             placeholder="Votre mot de passe"
-            className={cn(inputClass, errors.password && "border-rose-400/70 focus:ring-rose-200")}
+            className={cn(inputClass, errors.password && "border-rose-400/70 focus:border-rose-400 focus:ring-rose-400/30")}
             {...register("password")}
           />
           {errors.password ? (
@@ -146,10 +146,10 @@ export function SignInForm() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/10" />
+          <div className="w-full border-t border-white/15" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-slate-950 px-2 text-slate-400">Ou continuer avec</span>
+          <span className="bg-[#0a0f1f] px-2 text-white/50">Ou continuer avec</span>
         </div>
       </div>
 
@@ -188,9 +188,9 @@ export function SignInForm() {
         </Button>
       </div>
 
-      <p className="text-center text-sm text-slate-300/80">
+      <p className="text-center text-sm text-white/70">
         Pas encore de compte ?{" "}
-        <Link href="/auth/sign-up" className="font-semibold text-emerald-200 hover:text-emerald-100 underline">
+        <Link href="/auth/sign-up" className="font-semibold text-white hover:text-white/80 underline">
           Créer un nouveau compte
         </Link>
       </p>

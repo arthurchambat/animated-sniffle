@@ -3,13 +3,13 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
 const bentoCardVariants = cva(
-  "bento-card relative overflow-hidden border border-white/10",
+  "bento-card relative overflow-hidden rounded-2xl border border-white/15 bg-white/5 backdrop-blur-sm",
   {
     variants: {
       emphasis: {
         default: "",
-        primary: "ring-1 ring-emerald-400/50",
-        accent: "ring-1 ring-amber-300/40"
+        primary: "ring-1 ring-white/30",
+        accent: "ring-1 ring-white/20"
       },
       padding: {
         none: "p-0",

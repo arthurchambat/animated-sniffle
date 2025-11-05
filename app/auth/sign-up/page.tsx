@@ -15,24 +15,21 @@ export default async function SignUpPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 py-24 text-slate-100">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-y-0 left-1/2 -z-10 hidden w-px bg-gradient-to-b from-emerald-300/0 via-emerald-400/40 to-emerald-300/0 md:block" />
-      
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-12 px-4 md:px-6">
+    <div className="grid min-h-[calc(100dvh-var(--header-h,72px))] place-items-center bg-[#0a0f1f] px-6 py-10 text-white">
+      <div className="flex w-full max-w-2xl flex-col gap-8">
         <div className="space-y-4 text-center">
-          <span className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.45em] text-emerald-200">
+          <span className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.45em] text-white/70">
             FinanceBro
           </span>
-          <h1 className="text-3xl font-semibold md:text-4xl">
+          <h1 className="text-[clamp(28px,3vw,42px)] font-semibold leading-tight">
             Crée ton compte
           </h1>
-          <p className="text-sm text-slate-300/85 md:text-base">
+          <p className="text-[clamp(15px,1.2vw,18px)] text-white/70">
             Rejoins les candidats qui se préparent aux meilleurs entretiens en finance.
           </p>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+        <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-8 backdrop-blur-sm">
           <SignUpWizard />
         </div>
       </div>
