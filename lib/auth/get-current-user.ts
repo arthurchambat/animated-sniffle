@@ -11,6 +11,9 @@ export interface CurrentUser {
   dob?: string | null;
   school?: string | null;
   sector?: string | null;
+  roleInterest?: string | null;
+  referral?: string | null;
+  cvPath?: string | null;
 }
 
 const mockUser: CurrentUser = {
@@ -76,7 +79,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   // Try to fetch profile data from database
   const { data: profile } = await supabase
     .from("profiles")
-    .select("first_name, last_name, dob, school, sector, linkedin_url, cv_path")
+    .select("first_name, last_name, dob, school, sector, referral, role_interest, linkedin_url, cv_path")
     .eq("id", session.user.id)
     .single();
 
@@ -91,6 +94,9 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     plan: metadata.plan ?? metadata.subscription ?? null,
     dob: profile?.dob ?? null,
     school: profile?.school ?? null,
-    sector: profile?.sector ?? null
+    sector: profile?.sector ?? null,
+    roleInterest: profile?.role_interest ?? null,
+    referral: profile?.referral ?? null,
+    cvPath: profile?.cv_path ?? null
   };
 }

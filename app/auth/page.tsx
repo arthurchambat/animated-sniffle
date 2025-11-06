@@ -16,7 +16,7 @@ interface AuthPageProps {
 export default async function AuthPage({ searchParams }: AuthPageProps) {
   const user = await getCurrentUser();
   if (user) {
-    redirect("/home");
+    redirect("/dashboard");
   }
 
   const resolved = searchParams instanceof Promise ? await searchParams : searchParams ?? {};

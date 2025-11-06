@@ -139,7 +139,7 @@ export function SignUpWizard({ onSwitchTab }: SignUpWizardProps) {
       }
 
       toast.success("Compte créé ! Bienvenue sur FinanceBro.");
-      router.push("/dashboard");
+      router.push("/onboarding");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Impossible de créer le compte. Réessayez.";

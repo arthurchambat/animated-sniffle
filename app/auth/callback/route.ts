@@ -5,7 +5,6 @@ import { createServerClient } from "@supabase/ssr";
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const next = requestUrl.searchParams.get("next") ?? "/dashboard";
 
   if (!code) {
     const redirectUrl = new URL("/auth/sign-in", request.url);
@@ -68,5 +67,23 @@ export async function GET(request: Request) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  return NextResponse.redirect(new URL(next, request.url));
+  // Check if this is a NEW user (first time with Google OAuth)
+  // Only redirect to onboarding if profile doesn't have first_name/last_name
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("first_name, last_name")
+      .eq("id", user.id)
+      .single();
+
+    // If no first_name/last_name, this is a new Google OAuth user → onboarding
+    if (!profile?.first_name || !profile?.last_name) {
+      return NextResponse.redirect(new URL("/onboarding", request.url));
+    }
+  }
+
+  // Existing users go directly to dashboard
+  return NextResponse.redirect(new URL("/dashboard", request.url));
 }

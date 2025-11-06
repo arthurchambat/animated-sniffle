@@ -13,11 +13,12 @@ export interface ProfileRow {
   linkedin_url: string | null;
   sector: string | null;
   referral: string | null;
+  role_interest: string | null;
   cv_path: string | null;
 }
 
 const PROFILE_COLUMNS =
-  "id, email, first_name, last_name, dob, school, linkedin_url, sector, referral, cv_path";
+  "id, email, first_name, last_name, dob, school, linkedin_url, sector, referral, role_interest, cv_path";
 
 function buildFallbackProfile(user: User): ProfileRow {
   const metadata = user?.user_metadata ?? {};
@@ -32,6 +33,7 @@ function buildFallbackProfile(user: User): ProfileRow {
     linkedin_url: metadata.linkedin_url ?? metadata.linkedin ?? null,
     sector: metadata.sector ?? null,
     referral: metadata.referral ?? null,
+    role_interest: metadata.role_interest ?? null,
     cv_path: metadata.cv_path ?? null
   };
 }
@@ -85,6 +87,7 @@ export async function updateProfile(
       values.linkedin_url !== undefined ? values.linkedin_url : currentProfile?.linkedin_url ?? null,
     sector: values.sector !== undefined ? values.sector : currentProfile?.sector ?? null,
     referral: values.referral !== undefined ? values.referral : currentProfile?.referral ?? null,
+    role_interest: values.role_interest !== undefined ? values.role_interest : currentProfile?.role_interest ?? null,
     cv_path: currentProfile?.cv_path ?? null
   };
 
@@ -124,6 +127,7 @@ export async function updateProfileCvPath(
     linkedin_url: currentProfile?.linkedin_url ?? null,
     sector: currentProfile?.sector ?? null,
     referral: currentProfile?.referral ?? null,
+    role_interest: currentProfile?.role_interest ?? null,
     cv_path: cvPath
   };
 
@@ -158,3 +162,72 @@ export const SECTOR_OPTIONS = [
 ] as const;
 
 export const REFERRAL_OPTIONS = ["ami", "linkedin", "google", "université", "événement", "autre"] as const;
+
+export const ROLE_INTEREST_OPTIONS = [
+  "Analyste",
+  "Associate",
+  "Vice President",
+  "Director",
+  "Managing Director",
+  "Autre"
+] as const;
+
+/**
+ * Check if a profile has completed the required onboarding fields
+ * (sector, referral, role_interest are required; cv_path is optional)
+ */
+export function isProfileComplete(profile: ProfileRow | null): boolean {
+  if (!profile) return false;
+  return !!(profile.sector && profile.referral && profile.role_interest);
+}
+
+/**
+ * Update onboarding-specific profile fields
+ */
+export async function upsertOnboardingProfile(
+  supabase: SupabaseBrowserClient,
+  userId: string,
+  values: {
+    first_name: string;
+    last_name: string;
+    dob?: string | null;
+    sector: string;
+    referral: string;
+    role_interest: string;
+    cv_path?: string | null;
+  },
+  currentProfile?: ProfileRow | null
+) {
+  const payload: ProfileRow = {
+    id: userId,
+    email: currentProfile?.email ?? null,
+    first_name: values.first_name,
+    last_name: values.last_name,
+    dob: values.dob ?? currentProfile?.dob ?? null,
+    school: currentProfile?.school ?? null,
+    linkedin_url: currentProfile?.linkedin_url ?? null,
+    sector: values.sector,
+    referral: values.referral,
+    role_interest: values.role_interest,
+    cv_path: values.cv_path ?? currentProfile?.cv_path ?? null
+  };
+
+  if (!payload.email) {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    payload.email = user?.email ?? null;
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(payload, { onConflict: "id" })
+    .select(PROFILE_COLUMNS)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}

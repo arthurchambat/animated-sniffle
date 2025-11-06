@@ -13,6 +13,7 @@ import {
   type ProfileRow,
   SECTOR_OPTIONS,
   REFERRAL_OPTIONS,
+  ROLE_INTEREST_OPTIONS,
   updateProfile
 } from "@/lib/supabase/profile";
 
@@ -30,7 +31,7 @@ const profileSchema = z.object({
     .optional()
     .or(z.literal(""))
     .refine(
-      (value) => value === "" || !Number.isNaN(Date.parse(value)),
+      (value) => value === "" || !Number.isNaN(Date.parse(value ?? "")),
       "Date de naissance invalide."
     ),
   school: z
@@ -44,13 +45,13 @@ const profileSchema = z.object({
     .optional()
     .or(z.literal(""))
     .refine(
-      (value) => value === "" || value.startsWith("https://"),
+      (value) => value === "" || value?.startsWith("https://"),
       "Le lien doit commencer par https://"
     )
     .refine((value) => {
       if (value === "") return true;
       try {
-        const url = new URL(value);
+        const url = new URL(value ?? "");
         return url.hostname.includes("linkedin.");
       } catch {
         return false;
@@ -62,6 +63,10 @@ const profileSchema = z.object({
     .or(z.literal("")),
   referral: z
     .enum(REFERRAL_OPTIONS)
+    .optional()
+    .or(z.literal("")),
+  roleInterest: z
+    .enum(ROLE_INTEREST_OPTIONS)
     .optional()
     .or(z.literal(""))
 });
@@ -97,8 +102,9 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
       dob: profile.dob ?? "",
       school: profile.school ?? "",
       linkedinUrl: profile.linkedin_url ?? "",
-      sector: profile.sector ?? "",
-      referral: profile.referral ?? ""
+      sector: (profile.sector ?? "") as any,
+      referral: (profile.referral ?? "") as any,
+      roleInterest: (profile.role_interest ?? "") as any
     }
   });
 
@@ -109,8 +115,9 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
       dob: profile.dob ?? "",
       school: profile.school ?? "",
       linkedinUrl: profile.linkedin_url ?? "",
-      sector: profile.sector ?? "",
-      referral: profile.referral ?? ""
+      sector: (profile.sector ?? "") as any,
+      referral: (profile.referral ?? "") as any,
+      roleInterest: (profile.role_interest ?? "") as any
     });
   }, [profile, reset]);
 
@@ -123,7 +130,8 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
         school: values.school ? values.school.trim() : null,
         linkedin_url: values.linkedinUrl ? values.linkedinUrl.trim() : null,
         sector: values.sector ? (values.sector as ProfileRow["sector"]) : null,
-        referral: values.referral ? (values.referral as ProfileRow["referral"]) : null
+        referral: values.referral ? (values.referral as ProfileRow["referral"]) : null,
+        role_interest: values.roleInterest ? (values.roleInterest as ProfileRow["role_interest"]) : null
       }, profile);
 
       toast.success("Profil mis à jour avec succès.");
@@ -134,8 +142,9 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
         dob: updated.dob ?? "",
         school: updated.school ?? "",
         linkedinUrl: updated.linkedin_url ?? "",
-        sector: updated.sector ?? "",
-        referral: updated.referral ?? ""
+        sector: (updated.sector ?? "") as any,
+        referral: (updated.referral ?? "") as any,
+        roleInterest: (updated.role_interest ?? "") as any
       });
     } catch (error) {
       console.error("[FinanceBro] Impossible de mettre à jour le profil", error);
@@ -257,6 +266,25 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
             ))}
           </select>
           {errors.referral ? <p className="text-xs text-rose-300">{errors.referral.message}</p> : null}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-200" htmlFor="account-role-interest">
+            Rôle recherché
+          </label>
+          <select
+            id="account-role-interest"
+            className={cn(selectClass, errors.roleInterest && "border-rose-400/70 focus:ring-rose-200")}
+            {...register("roleInterest")}
+          >
+            <option value="">Sélectionner</option>
+            {ROLE_INTEREST_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          {errors.roleInterest ? <p className="text-xs text-rose-300">{errors.roleInterest.message}</p> : null}
         </div>
 
         <div className="space-y-2 md:col-span-2">
