@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/app/PageHeader";
 import { ProfileForm } from "@/components/account/ProfileForm";
 import { CvManager } from "@/components/account/CvManager";
+import { PaymentsCard, type BillingData } from "@/components/account/PaymentsCard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getCurrentProfile, type ProfileRow } from "@/lib/supabase/profile";
 
@@ -15,6 +16,7 @@ export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [tokensMinutes, setTokensMinutes] = useState(150); // Mock: 2h30 de tokens disponibles
 
   useEffect(() => {
     let cancelled = false;
@@ -59,6 +61,16 @@ export default function AccountPage() {
     setProfile(updated);
   };
 
+  const handleSaveBilling = (data: BillingData) => {
+    console.log('[Account] Billing data to save:', data);
+    toast.success('Informations de facturation enregistrées (stub)');
+  };
+
+  const handleSelectPackage = (planId: string) => {
+    console.log('[Account] Package selected:', planId);
+    toast.success(`Package ${planId} sélectionné (stub - Stripe à venir)`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -86,7 +98,14 @@ export default function AccountPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <ProfileForm userId={userId} profile={profile} onProfileChange={handleProfileChange} />
-        <CvManager userId={userId} profile={profile} onProfileChange={handleCvChange} />
+        <div className="space-y-6">
+          <CvManager userId={userId} profile={profile} onProfileChange={handleCvChange} />
+          <PaymentsCard
+            tokensMinutes={tokensMinutes}
+            onSaveBilling={handleSaveBilling}
+            onSelectPackage={handleSelectPackage}
+          />
+        </div>
       </div>
     </div>
   );
