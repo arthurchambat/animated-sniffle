@@ -9,21 +9,21 @@ const team = [
     name: "Arthur Chambat",
     role: "Co-fondateur & CEO",
     linkedin: "https://www.linkedin.com/in/arthur-chambat/",
-    linkedinPhoto: "https://media.licdn.com/dms/image/v2/D4E03AQGn8zUqPLUhKg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1729863464033?e=1740614400&v=beta&t=8zQVqYqPLqJvqPQ0VqYYqPLqJvqPQ0VqYYqPLqJvqPQ",
+    image: "/images/Chambat-Arthur.JPG",
     bio: "Diplômé HEC Paris. Passionné par l'IA et l'éducation, spécialiste en coaching finance et product management."
   },
   {
     name: "Christopher Foliard",
     role: "Co-fondateur & CTO",
     linkedin: "https://www.linkedin.com/in/christopher-foliard/",
-    linkedinPhoto: "https://media.licdn.com/dms/image/v2/D4E03AQHqPLqJvqPQ0V/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1729863464033?e=1740614400&v=beta&t=8zUqPLqJvqPQ0VqYYqPLqJvqPQ0VqYYqPLqJvqPQ",
+    image: "/images/Foliard-Christopher-sd.jpg",
     bio: "Ingénieur full-stack, expert en développement IA et architecture logicielle. Build des solutions tech pour la finance."
   },
   {
     name: "Arthur Riché",
     role: "Co-fondateur & CPO",
     linkedin: "https://www.linkedin.com/in/arthur-rich%C3%A9-7a277719a/",
-    linkedinPhoto: "https://media.licdn.com/dms/image/v2/D4E03AQGqPLqJvqPQ0V/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1729863464033?e=1740614400&v=beta&t=8zUqPLqJvqPQ0VqYYqPLqJvqPQ0VqYYqPLqJvqPQ",
+    image: "/images/Riche-Arthur.JPG",
     bio: "Expert en finance d'entreprise et private equity. Conçoit des expériences d'apprentissage pour les futurs analystes."
   }
 ];
@@ -41,10 +41,14 @@ export default function TeamPage() {
           <BentoCard key={member.name} padding="lg" className="space-y-4 hover:border-emerald-400/40 transition-all">
             {/* Photo de profil */}
             <div className="flex justify-center">
-              <div className="relative h-24 w-24 rounded-full overflow-hidden bg-slate-800 border-2 border-emerald-400/20">
-                <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-emerald-200">
-                  {member.name.split(' ').map(n => n[0]).join('')}
-                </div>
+              <div className="relative h-32 w-32 rounded-full overflow-hidden bg-slate-800 border-2 border-emerald-400/20">
+                <Image
+                  src={member.image}
+                  alt={`Photo de ${member.name}`}
+                  fill
+                  className="object-cover"
+                  sizes="128px"
+                />
               </div>
             </div>
 

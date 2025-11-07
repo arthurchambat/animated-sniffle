@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/app/PageHeader";
-import { ProfileForm } from "@/components/account/ProfileForm";
-import { CvManager } from "@/components/account/CvManager";
+import { AccountOverview } from "@/components/account/AccountOverview";
+import { AccountEditDialog } from "@/components/account/AccountEditDialog";
 import { PaymentsCard, type BillingData } from "@/components/account/PaymentsCard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getCurrentProfile, type ProfileRow } from "@/lib/supabase/profile";
@@ -16,6 +15,7 @@ export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [tokensMinutes, setTokensMinutes] = useState(150); // Mock: 2h30 de tokens disponibles
 
   useEffect(() => {
@@ -57,10 +57,6 @@ export default function AccountPage() {
     setProfile(updated);
   };
 
-  const handleCvChange = (updated: ProfileRow) => {
-    setProfile(updated);
-  };
-
   const handleSaveBilling = (data: BillingData) => {
     console.log('[Account] Billing data to save:', data);
     toast.success('Informations de facturation enregistrées (stub)');
@@ -90,23 +86,27 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Mon compte"
-        subtitle="Gère tes informations personnelles et ton CV pour personnaliser tes sessions."
+    <>
+      {/* Read-only overview with Edit my info button */}
+      <AccountOverview profile={profile} onEditClick={() => setIsEditOpen(true)} />
+
+      {/* Edit dialog for updating profile */}
+      <AccountEditDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        userId={userId}
+        profile={profile}
+        onProfileChange={handleProfileChange}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <ProfileForm userId={userId} profile={profile} onProfileChange={handleProfileChange} />
-        <div className="space-y-6">
-          <CvManager userId={userId} profile={profile} onProfileChange={handleCvChange} />
-          <PaymentsCard
-            tokensMinutes={tokensMinutes}
-            onSaveBilling={handleSaveBilling}
-            onSelectPackage={handleSelectPackage}
-          />
-        </div>
+      {/* Payments section (optional, can be moved to AccountOverview if needed) */}
+      <div className="mx-auto max-w-3xl px-6 pb-10 md:px-8 md:pb-14">
+        <PaymentsCard
+          tokensMinutes={tokensMinutes}
+          onSaveBilling={handleSaveBilling}
+          onSelectPackage={handleSelectPackage}
+        />
       </div>
-    </div>
+    </>
   );
 }

@@ -51,6 +51,42 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Remove any potential green debug lines and scroll-snap indicators */
+section,
+[data-theme],
+[id^="hero"],
+[id^="story"],
+[id^="value"],
+[id^="team"],
+[id^="pricing"],
+[id^="contact"],
+[id^="cta"] {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Override scroll-snap visual indicators */
+section::before,
+section::after,
+[data-theme]::before,
+[data-theme]::after {
+  display: none !important;
+  content: none !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* Force background color on all sections to match */
+section[data-theme] {
+  background-color: #0a0f1f !important;
+}
+
+/* Remove scroll-snap debug lines (Chrome DevTools) */
+* {
+  scroll-snap-stop: unset;
+}
+
 a {
   text-decoration: none;
   color: inherit;

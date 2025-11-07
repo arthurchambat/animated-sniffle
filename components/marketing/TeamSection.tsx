@@ -1,49 +1,60 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { Linkedin } from "lucide-react";
 import { m, useReducedMotion } from "framer-motion";
 
 const teamMembers = [
   {
-    name: "Christopher",
+    name: "Christopher Foliard",
     role: "Co-fondateur · Produit & Avatar IA",
-    href: "https://www.linkedin.com",
-    initials: "C"
+    href: "https://www.linkedin.com/in/christopher-foliard/",
+    image: "/images/Foliard-Christopher-sd.jpg"
   },
   {
-    name: "Arthur L.",
+    name: "Arthur Chambat",
     role: "Co-fondateur · Stratégie & Coaching",
-    href: "https://www.linkedin.com",
-    initials: "AL"
+    href: "https://www.linkedin.com/in/arthur-chambat/",
+    image: "/images/Chambat-Arthur.JPG"
   },
   {
-    name: "Arthur P.",
+    name: "Arthur Riché",
     role: "Co-fondateur · Data & Expérience candidat",
-    href: "https://www.linkedin.com",
-    initials: "AP"
+    href: "https://www.linkedin.com/in/arthur-rich%C3%A9-7a277719a/",
+    image: "/images/Riche-Arthur.JPG"
   }
 ];
 
 export function TeamSection() {
   const shouldReduceMotion = useReducedMotion();
-  const motionInitial = shouldReduceMotion ? undefined : { opacity: 0.4, y: 24 };
-  const motionWhileInView = shouldReduceMotion ? undefined : { opacity: 1, y: 0 };
-  const motionTransition = shouldReduceMotion ? undefined : { duration: 0.24, ease: "easeOut" };
 
   return (
     <div className="grid gap-6 md:grid-cols-3">
-      {teamMembers.map((member, index) => (
-        <m.article
-          key={member.name}
-          initial={motionInitial}
-          whileInView={motionWhileInView}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={motionTransition ? { ...motionTransition, delay: index * 0.06 } : undefined}
-          className="flex h-full flex-col gap-4 rounded-3xl border border-[#0a0f1f14] bg-white/80 p-6 text-[#0a0f1f] shadow-[0_16px_40px_rgba(10,15,31,0.06)]"
-        >
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0a0f1f] text-lg font-semibold text-white">
-            {member.initials}
+      {teamMembers.map((member, index) => {
+        const motionProps = shouldReduceMotion
+          ? {}
+          : {
+              initial: { opacity: 0.4, y: 24 },
+              whileInView: { opacity: 1, y: 0 },
+              transition: { duration: 0.24, delay: index * 0.06, ease: "easeOut" as const }
+            };
+
+        return (
+          <m.article
+            key={member.name}
+            {...motionProps}
+            viewport={{ once: true, amount: 0.4 }}
+            className="flex h-full flex-col gap-4 rounded-3xl border border-[#0a0f1f14] bg-white/80 p-6 text-[#0a0f1f] shadow-[0_16px_40px_rgba(10,15,31,0.06)]"
+          >
+          <div className="relative h-20 w-20 overflow-hidden rounded-full bg-[#0a0f1f]">
+            <Image
+              src={member.image}
+              alt={`Photo de ${member.name}`}
+              fill
+              className="object-cover"
+              sizes="80px"
+            />
           </div>
           <div className="space-y-2">
             <h3 className="text-lg font-semibold">{member.name}</h3>
@@ -59,7 +70,8 @@ export function TeamSection() {
             Linkedin
           </Link>
         </m.article>
-      ))}
+        );
+      })}
     </div>
   );
 }

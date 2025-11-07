@@ -56,26 +56,20 @@ export function DotsNav({ sections, activeId }: DotsNavProps) {
       aria-label="Navigation rapide"
       className="pointer-events-none fixed right-6 top-1/2 z-40 hidden -translate-y-1/2 lg:flex"
     >
-      <ul className="flex flex-col items-center gap-4">
+      <ul className="flex flex-col items-center gap-3 max-h-[80vh] py-4">
         {sections.map((section) => {
           const isActive = activeId === section.id;
-          const isLight = section.theme === "light";
           return (
-            <li key={section.id}>
+            <li key={section.id} className="shrink-0">
               <button
                 type="button"
                 aria-label={section.label}
                 aria-current={isActive ? "true" : undefined}
                 className={cn(
-                  "pointer-events-auto h-3.5 w-3.5 rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
-                  isLight ? "focus-visible:outline-[#0a0f1f]" : "focus-visible:outline-white",
+                  "pointer-events-auto h-3 w-3 rounded-full border transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                   isActive
-                    ? isLight
-                      ? "border-[#0a0f1f] bg-[#0a0f1f]"
-                      : "border-white bg-white"
-                    : isLight
-                      ? "border-[#0a0f1f66] bg-transparent hover:border-[#0a0f1f]"
-                      : "border-white/40 bg-transparent hover:border-white/70"
+                    ? "border-white bg-white"
+                    : "border-white/40 bg-transparent hover:border-white/70"
                 )}
                 onClick={() => handleNavigate(section.id)}
               />

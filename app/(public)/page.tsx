@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { Sparkles, Workflow, Timer, BarChart3, UserCircle, Play, FileText, Trophy } from "lucide-react";
 import { HeroVideoPinned } from "@/components/marketing/HeroVideoPinned";
 import { Chapter } from "@/components/marketing/Chapter";
+import { DiagonalSteps } from "@/components/marketing/DiagonalSteps";
 import { TeamSection } from "@/components/marketing/TeamSection";
 import { PricingSection } from "@/components/marketing/PricingSection";
 import { ContactSection } from "@/components/marketing/ContactSection";
@@ -112,7 +113,7 @@ export default function PublicLandingPage() {
   }, [activeId, activeTheme]);
 
   return (
-    <main className="relative h-[100dvh]">
+    <main className="relative h-dvh">
       <DotsNav sections={CHAPTERS} activeId={activeId} />
       <PageScroller>
         <FullPageSection id="hero" theme="dark" contentClassName="max-w-none px-0 md:px-0 xl:px-0 py-0 h-full">
@@ -120,53 +121,7 @@ export default function PublicLandingPage() {
         </FullPageSection>
 
         <FullPageSection id="story" theme="dark">
-          <section id="how-it-works">
-            <Chapter
-              eyebrow="Comment ça marche"
-              title="Ton parcours de préparation, de la création du profil au job"
-              description="FinanceBro orchestre ton entraînement avec un parcours complet : onboarding personnalisé, simulations réalistes, feedback instantané et suivi de progression."
-            >
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                {HOW_IT_WORKS_STEPS.map((step, index) => (
-                  <m.div
-                    key={step.step}
-                    initial={shouldReduceMotion ? undefined : { opacity: 0.4, y: 24 }}
-                    whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.5 }}
-                    transition={
-                      shouldReduceMotion ? undefined : { duration: 0.24, delay: index * 0.08, ease: "easeOut" }
-                    }
-                  >
-                    <BentoCard 
-                      padding="lg" 
-                      className="h-full hover:border-white/30 transition-all group"
-                    >
-                      <div className="flex flex-col gap-4 h-full">
-                        <div className="flex items-center justify-between">
-                          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white group-hover:border-white/30 transition-colors">
-                            <step.icon className="h-6 w-6" aria-hidden="true" />
-                          </span>
-                          <span className="text-xs font-medium text-white/60 uppercase tracking-wider">
-                            Étape {step.step}
-                          </span>
-                        </div>
-                        <div className="space-y-3 flex-1">
-                          <h3 className="text-lg font-semibold text-white">{step.title}</h3>
-                          <p className="text-sm text-white/70 leading-relaxed">{step.description}</p>
-                          {step.bullet && (
-                            <p className="text-xs text-white/50 flex items-center gap-2 pt-1">
-                              <span className="w-1 h-1 rounded-full bg-white/30" aria-hidden="true" />
-                              {step.bullet}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </BentoCard>
-                  </m.div>
-                ))}
-              </div>
-            </Chapter>
-          </section>
+          <DiagonalSteps steps={HOW_IT_WORKS_STEPS} />
         </FullPageSection>
 
         <FullPageSection id="value" theme="dark" backgroundVideoSrc="/videos/video-interview2.mp4" backgroundVideoPlaybackRate={0.9}>
@@ -179,12 +134,12 @@ export default function PublicLandingPage() {
               {VALUE_PROPS.map((item, index) => (
                 <m.div
                   key={item.title}
-                  initial={shouldReduceMotion ? undefined : { opacity: 0.4, y: 24 }}
-                  whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                  {...(shouldReduceMotion ? {} : {
+                    initial: { opacity: 0.4, y: 24 },
+                    whileInView: { opacity: 1, y: 0 },
+                    transition: { duration: 0.24, delay: index * 0.08, ease: "easeOut" }
+                  })}
                   viewport={{ once: true, amount: 0.5 }}
-                  transition={
-                    shouldReduceMotion ? undefined : { duration: 0.24, delay: index * 0.08, ease: "easeOut" }
-                  }
                   className="flex flex-col gap-3"
                 >
                   <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white text-white">
@@ -230,7 +185,7 @@ export default function PublicLandingPage() {
           </Chapter>
         </FullPageSection>
 
-        <FullPageSection id="cta" theme="dark" contentClassName="max-w-4xl">
+        <FullPageSection id="cta" theme="dark" contentClassName="max-w-4xl" backgroundVideoSrc="/videos/video-interview3.mp4" backgroundVideoPlaybackRate={0.9}>
           <FinalCTA ctaHref="/auth/sign-in" />
         </FullPageSection>
       </PageScroller>

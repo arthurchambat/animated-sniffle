@@ -7,32 +7,6 @@ interface PageScrollerProps extends HTMLAttributes<HTMLDivElement> {}
 
 export const PageScroller = forwardRef<HTMLDivElement, PageScrollerProps>(
   ({ className, children, ...rest }, ref) => {
-    // DEBUG: Log scroll container on mount
-    if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { useEffect } = require("react");
-      useEffect(() => {
-        const scroller = document.querySelector('[data-page-scroller="true"]');
-        console.log("✅ [PageScroller] Scroll container détecté:", scroller);
-        
-        const snapElements = document.querySelectorAll('[class*="snap-start"]');
-        console.log("📍 [PageScroller] Éléments avec snap-start:", snapElements.length, snapElements);
-        
-        // Guide visuel temporaire (à retirer en production)
-        snapElements.forEach((el, index) => {
-          const separator = document.createElement("div");
-          separator.style.cssText = 
-            "position:absolute;top:0;left:0;right:0;height:4px;background:lime;z-index:9999;pointer-events:none;opacity:0.5;";
-          separator.setAttribute("data-debug-separator", String(index));
-          el.appendChild(separator);
-        });
-        
-        return () => {
-          document.querySelectorAll('[data-debug-separator]').forEach(el => el.remove());
-        };
-      }, []);
-    }
-    
     return (
       <div
         ref={ref}

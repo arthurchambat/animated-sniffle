@@ -12,7 +12,6 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   type ProfileRow,
   SECTOR_OPTIONS,
-  REFERRAL_OPTIONS,
   ROLE_INTEREST_OPTIONS,
   updateProfile
 } from "@/lib/supabase/profile";
@@ -34,11 +33,6 @@ const profileSchema = z.object({
       (value) => value === "" || !Number.isNaN(Date.parse(value ?? "")),
       "Date de naissance invalide."
     ),
-  school: z
-    .string()
-    .max(160, "L'établissement est trop long.")
-    .optional()
-    .or(z.literal("")),
   linkedinUrl: z
     .string()
     .trim()
@@ -59,10 +53,6 @@ const profileSchema = z.object({
     }, "Le lien doit pointer vers LinkedIn."),
   sector: z
     .enum(SECTOR_OPTIONS)
-    .optional()
-    .or(z.literal("")),
-  referral: z
-    .enum(REFERRAL_OPTIONS)
     .optional()
     .or(z.literal("")),
   roleInterest: z
@@ -100,10 +90,8 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
       firstName: profile.first_name ?? "",
       lastName: profile.last_name ?? "",
       dob: profile.dob ?? "",
-      school: profile.school ?? "",
       linkedinUrl: profile.linkedin_url ?? "",
       sector: (profile.sector ?? "") as any,
-      referral: (profile.referral ?? "") as any,
       roleInterest: (profile.role_interest ?? "") as any
     }
   });
@@ -113,10 +101,8 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
       firstName: profile.first_name ?? "",
       lastName: profile.last_name ?? "",
       dob: profile.dob ?? "",
-      school: profile.school ?? "",
       linkedinUrl: profile.linkedin_url ?? "",
       sector: (profile.sector ?? "") as any,
-      referral: (profile.referral ?? "") as any,
       roleInterest: (profile.role_interest ?? "") as any
     });
   }, [profile, reset]);
@@ -127,10 +113,8 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
         first_name: values.firstName.trim(),
         last_name: values.lastName.trim(),
         dob: values.dob ? values.dob : null,
-        school: values.school ? values.school.trim() : null,
         linkedin_url: values.linkedinUrl ? values.linkedinUrl.trim() : null,
         sector: values.sector ? (values.sector as ProfileRow["sector"]) : null,
-        referral: values.referral ? (values.referral as ProfileRow["referral"]) : null,
         role_interest: values.roleInterest ? (values.roleInterest as ProfileRow["role_interest"]) : null
       }, profile);
 
@@ -140,10 +124,8 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
         firstName: updated.first_name ?? "",
         lastName: updated.last_name ?? "",
         dob: updated.dob ?? "",
-        school: updated.school ?? "",
         linkedinUrl: updated.linkedin_url ?? "",
         sector: (updated.sector ?? "") as any,
-        referral: (updated.referral ?? "") as any,
         roleInterest: (updated.role_interest ?? "") as any
       });
     } catch (error) {
@@ -217,20 +199,6 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-200" htmlFor="account-school">
-            École / Université
-          </label>
-          <input
-            id="account-school"
-            type="text"
-            placeholder="HEC, ESCP, Centrale..."
-            className={cn(inputClass, errors.school && "border-rose-400/70 focus:ring-rose-200")}
-            {...register("school")}
-          />
-          {errors.school ? <p className="text-xs text-rose-300">{errors.school.message}</p> : null}
-        </div>
-
-        <div className="space-y-2">
           <label className="text-sm font-medium text-slate-200" htmlFor="account-sector">
             Secteur d&apos;intérêt
           </label>
@@ -247,25 +215,6 @@ export function ProfileForm({ userId, profile, onProfileChange }: ProfileFormPro
             ))}
           </select>
           {errors.sector ? <p className="text-xs text-rose-300">{errors.sector.message}</p> : null}
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-200" htmlFor="account-referral">
-            Comment as-tu entendu parler de nous ?
-          </label>
-          <select
-            id="account-referral"
-            className={cn(selectClass, errors.referral && "border-rose-400/70 focus:ring-rose-200")}
-            {...register("referral")}
-          >
-            <option value="">Sélectionner</option>
-            {REFERRAL_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          {errors.referral ? <p className="text-xs text-rose-300">{errors.referral.message}</p> : null}
         </div>
 
         <div className="space-y-2">

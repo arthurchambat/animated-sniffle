@@ -173,6 +173,20 @@ export const ROLE_INTEREST_OPTIONS = [
 ] as const;
 
 /**
+ * Serialize an array of strings to a comma-separated string for database storage.
+ */
+export function serializeArray(arr: string[]): string {
+  return arr.filter(Boolean).join(',');
+}
+
+/**
+ * Deserialize a comma-separated string to an array of strings.
+ */
+export function deserializeArray(str: string | null): string[] {
+  return str ? str.split(',').filter(Boolean) : [];
+}
+
+/**
  * Check if a profile has completed the required onboarding fields
  * (sector, referral, role_interest are required; cv_path is optional)
  */
@@ -230,4 +244,64 @@ export async function upsertOnboardingProfile(
   }
 
   return data;
+}
+
+/**
+ * Get current user's profile (alias for getCurrentProfile for consistency)
+ */
+export async function getProfile(supabase: SupabaseBrowserClient, userId: string) {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select(PROFILE_COLUMNS)
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error && error.code !== "PGRST116") {
+    throw error;
+  }
+
+  if (!profile) {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    if (user) {
+      return buildFallbackProfile(user);
+    }
+  }
+
+  return profile;
+}
+
+/**
+ * Replace CV file in storage and update profile cv_path
+ */
+export async function replaceCv(
+  supabase: SupabaseBrowserClient,
+  userId: string,
+  file: File,
+  currentProfile?: ProfileRow | null
+): Promise<{ profile: ProfileRow; cvPath: string }> {
+  const CV_BUCKET = "cvs";
+  const targetPath = `${userId}/cv.pdf`;
+
+  // Remove old CV if exists
+  if (currentProfile?.cv_path) {
+    await supabase.storage.from(CV_BUCKET).remove([currentProfile.cv_path]);
+  }
+
+  // Upload new CV
+  const { error: uploadError } = await supabase.storage.from(CV_BUCKET).upload(targetPath, file, {
+    cacheControl: "0",
+    upsert: true,
+    contentType: "application/pdf"
+  });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  // Update profile with new cv_path
+  const updatedProfile = await updateProfileCvPath(supabase, userId, targetPath, currentProfile);
+
+  return { profile: updatedProfile, cvPath: targetPath };
 }

@@ -5,40 +5,45 @@ import { m, useReducedMotion } from "framer-motion";
 
 const plans = [
   {
-    name: "Basic",
-    price: "Gratuit",
-    frequency: "pour démarrer",
-    description: "1 session IA/mois avec rapport synthétique et axes clés.",
+    name: "Pack Découverte",
+    price: "5€",
+    frequency: "pack unique",
+    description: "Teste FinanceBro avec un premier entretien complet et feedback personnalisé.",
     features: [
-      "Mock interview IA mensuelle",
-      "Transcription + axes d'amélioration",
-      "Benchmarks finance essentiels"
+      "1 entretien IA complet",
+      "Feedback détaillé instantané",
+      "Scoring sur 9 axes finance",
+      "Export PDF du rapport"
     ],
-    cta: { href: "/auth/sign-in", label: "Tester" },
+    cta: { href: "/auth/sign-in", label: "Découvrir" },
     highlighted: false
   },
   {
-    name: "Medium",
-    price: "79€",
-    frequency: "par mois",
-    description: "Pack intensif pour préparer la saison de recrutement IB/PE.",
+    name: "Pack Intensif",
+    price: "29€",
+    frequency: "2h de préparation",
+    description: "Le pack idéal pour préparer efficacement tes entretiens en IB/PE.",
     features: [
-      "4 sessions IA/mois avec scénarios adaptatifs",
-      "Scoring multi-axes + coaching priorisé",
-      "Exports analytics et suivi des progrès"
+      "4 entretiens IA complets",
+      "Feedback détaillé après chaque session",
+      "Marges de progression personnalisées",
+      "Plan d'entraînement 7 jours",
+      "Benchmarks vs analystes IB/PE"
     ],
-    cta: { href: "/pricing", label: "Choisir Medium" },
+    cta: { href: "/pricing", label: "Choisir Intensif" },
     highlighted: true
   },
   {
-    name: "Pro",
-    price: "149€",
-    frequency: "par mois",
-    description: "Pour les candidats exigeants ou programmes carrières écoles.",
+    name: "Pack Pro",
+    price: "69€",
+    frequency: "5h de préparation",
+    description: "Préparation complète pour candidats exigeants et postes top-tier.",
     features: [
-      "Sessions illimitées",
-      "Débrief coach humain (30 min/mois)",
-      "Playbooks M&A / PE / Marchés & exports illimités"
+      "Préparation complète 5h",
+      "Entretiens illimités pendant 30 jours",
+      "Tous les templates (M&A, PE, Marchés)",
+      "Coaching priorisé et suivi personnalisé",
+      "Analytics avancés et exports illimités"
     ],
     cta: { href: "/pricing", label: "Choisir Pro" },
     highlighted: false
@@ -47,9 +52,6 @@ const plans = [
 
 export function PricingSection() {
   const shouldReduceMotion = useReducedMotion();
-  const motionInitial = shouldReduceMotion ? undefined : { opacity: 0.4, y: 24 };
-  const motionWhileInView = shouldReduceMotion ? undefined : { opacity: 1, y: 0 };
-  const motionTransition = shouldReduceMotion ? undefined : { duration: 0.24, ease: "easeOut" };
 
   return (
     <div className="grid gap-6 md:grid-cols-3">
@@ -58,10 +60,14 @@ export function PricingSection() {
         return (
           <m.div
             key={plan.name}
-            initial={motionInitial}
-            whileInView={motionWhileInView}
+            {...(shouldReduceMotion
+              ? {}
+              : {
+                  initial: { opacity: 0.4, y: 24 },
+                  whileInView: { opacity: 1, y: 0 },
+                  transition: { duration: 0.24, ease: "easeOut", delay: index * 0.08 }
+                })}
             viewport={{ once: true, amount: 0.4 }}
-            transition={motionTransition ? { ...motionTransition, delay: index * 0.08 } : undefined}
             className={
               isHighlighted
                 ? "flex h-full flex-col gap-6 rounded-3xl border border-white/40 bg-[#0a0f1f] p-6 text-white shadow-[0_18px_40px_rgba(10,15,31,0.3)]"

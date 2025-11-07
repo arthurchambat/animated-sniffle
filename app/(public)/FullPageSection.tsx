@@ -77,11 +77,8 @@ export function FullPageSection({
       className={cn(
         // Conteneur plein écran avec snap STRICT
         "relative isolate flex h-dvh snap-start snap-always flex-col overflow-hidden",
-        // Fond bleu foncé pour TOUTES les sections (ajustable ici via --section-bg)
+        // Fond bleu foncé pour TOUTES les sections
         "bg-[#0a0f1f] text-white",
-        // Séparateurs blancs épais en haut et bas (épaisseur ajustable via --separator-h)
-        "before:absolute before:left-0 before:right-0 before:top-0 before:z-50 before:h-1 before:bg-white before:content-['']",
-        "after:absolute after:bottom-0 after:left-0 after:right-0 after:z-50 after:h-1 after:bg-white after:content-['']",
         className
       )}
       style={{ scrollSnapStop: "always" }}
