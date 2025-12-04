@@ -15,7 +15,6 @@ import { PageScroller } from "./PageScroller";
 import { FullPageSection } from "./FullPageSection";
 import { DotsNav } from "./DotsNav";
 import { m, useReducedMotion } from "framer-motion";
-import { BentoCard } from "@/components/ui/bento-card";
 
 const SECTION_THEME_MAP: Record<string, NavbarTheme> = {
   hero: "dark",
@@ -113,7 +112,7 @@ export default function PublicLandingPage() {
   }, [activeId, activeTheme]);
 
   return (
-    <main className="relative h-dvh">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#0a0f1f] text-white">
       <DotsNav sections={CHAPTERS} activeId={activeId} />
       <PageScroller>
         <FullPageSection id="hero" theme="dark" contentClassName="max-w-none px-0 md:px-0 xl:px-0 py-0 h-full">
@@ -166,9 +165,9 @@ export default function PublicLandingPage() {
 
         <FullPageSection id="pricing" theme="dark">
           <Chapter
-            eyebrow="Plans"
-            title="Choisis un plan aligné sur ton objectif recrutement"
-            description="Sans engagement. Pause possible entre deux saisons. Upgrade instantané pour débloquer plus de sessions et coaching."
+            eyebrow="Tarifs"
+            title="Packs de crédits (version démo)"
+            description="Modèle économique proposé - Paiement à l'achat sans abonnement."
           >
             <PricingSection />
           </Chapter>

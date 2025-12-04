@@ -43,10 +43,10 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         throw new Error("Button with asChild requires a valid React element child.");
       }
       return cloneElement(child, {
-        className: cn(classes, child.props.className),
+        ...props,
+        className: cn(classes, (child.props as any).className),
         ref,
-        ...props
-      });
+      } as any);
     }
 
     return (
