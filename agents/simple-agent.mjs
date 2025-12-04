@@ -6,7 +6,6 @@ import './load-env.mjs';
 
 import { WorkerOptions, cli, defineAgent, AutoSubscribe, log } from "@livekit/agents";
 import * as openai from "@livekit/agents-plugin-openai";
-// import * as bey from "@livekit/agents-plugin-bey";
 import { RoomEvent } from "@livekit/rtc-node";
 
 // Load environment variables
@@ -17,11 +16,11 @@ export default defineAgent({
     // Connect to the room
     await ctx.connect(undefined, AutoSubscribe.SUBSCRIBE_ALL);
 
-    log.info(`✅ Connected to room: ${ctx.room.name}`);
+    log.info(`Connected to room: ${ctx.room.name}`);
 
     // Wait for the first participant (the user)
     const participant = await ctx.waitForParticipant();
-    log.info(`✅ Participant joined: ${participant.identity}`);
+    log.info(`Participant joined: ${participant.identity}`);
 
     // Initialize OpenAI for transcription and chat
     const openaiApiKey = process.env.OPENAI_API_KEY;
@@ -29,20 +28,7 @@ export default defineAgent({
       throw new Error("OPENAI_API_KEY environment variable is required");
     }
 
-    log.info("✅ Initializing OpenAI Realtime with Voice Activity Detection");
-
-    /* TEMPORARILY DISABLED - BeyondPresence integration needs fixing
-    // Initialize BeyondPresence avatar
-    const beyApiKey = process.env.BEYOND_PRESENCE_API_KEY;
-    const beyAvatarId = process.env.BEY_AVATAR_ID;
-    
-    if (!beyApiKey || !beyAvatarId) {
-      log.warn("⚠️  BeyondPresence credentials missing - avatar will not be displayed");
-    } else {
-      log.info(`Initializing BeyondPresence avatar: ${beyAvatarId}`);
-      // Avatar integration to be added here
-    }
-    */
+    log.info("Initializing OpenAI Realtime with Voice Activity Detection");
 
     // Configure the agent with Voice Activity Detection (VAD)
     const assistant = new openai.realtime.RealtimeModel({
@@ -75,24 +61,14 @@ Remember: Good interviewers listen more than they speak.`,
       participant: participant,
     });
 
-    log.info("✅ OpenAI Realtime session started - agent is listening...");
-
-    /* TEMPORARILY DISABLED - BeyondPresence integration
-    // Link the BeyondPresence avatar to the OpenAI audio output
-    session.on("agent_speech_committed", async (message) => {
-      // Send the audio to the avatar for lip-sync
-      if (avatar && message.audio) {
-        await avatar.say(message.audio);
-      }
-    });
-    */
+    log.info("OpenAI Realtime session started - waiting for audio...");
 
     // Handle room events
     ctx.room.on(RoomEvent.ParticipantDisconnected, (participant) => {
-      log.info(`❌ Participant left: ${participant.identity}`);
+      log.info(`Participant left: ${participant.identity}`);
     });
 
-    log.info("🎙️  Finance Interview Agent is ready and responsive!");
+    log.info("Finance Interview Agent started successfully!");
   },
 });
 
@@ -101,7 +77,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   cli.runApp(
     new WorkerOptions({
       agent: fileURLToPath(import.meta.url),
-      agentName: process.env.LIVEKIT_AGENT_NAME || "finance-coach-avatar",
+      agentName: process.env.LIVEKIT_AGENT_NAME || "finance-coach-audio",
     })
   );
 }
