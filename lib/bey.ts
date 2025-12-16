@@ -1,5 +1,3 @@
-"use server";
-
 import { randomUUID } from "crypto";
 import {
   createLiveKitViewerAccess,
@@ -22,8 +20,8 @@ function resolveSessionId(candidate?: string): string {
 }
 
 export function isBeyondPresenceReady(): boolean {
-  const hasApiKey = Boolean(process.env.BEYOND_PRESENCE_API_KEY);
-  return hasApiKey && isLiveKitConfigured();
+  // LiveKit can work without BeyondPresence API
+  return isLiveKitConfigured();
 }
 
 export async function createBeyondPresenceSession(
@@ -54,7 +52,7 @@ export async function createBeyondPresenceSession(
 
   const metadata = JSON.stringify(metadataPayload);
 
-  const livekit = createLiveKitViewerAccess({
+  const livekit = await createLiveKitViewerAccess({
     roomName,
     name: "FinanceBro Candidate",
     metadata,
@@ -62,6 +60,7 @@ export async function createBeyondPresenceSession(
   });
 
   if (!livekit) {
+    console.warn("[BeyondPresence] Failed to create LiveKit viewer access");
     return {
       sessionId,
       roomName,
@@ -74,7 +73,9 @@ export async function createBeyondPresenceSession(
     };
   }
 
+  console.log("[BeyondPresence] Dispatching agent to room:", roomName, "Agent:", DEFAULT_AGENT_NAME);
   const dispatched = await dispatchAgentToRoom(roomName, DEFAULT_AGENT_NAME, metadata);
+  console.log("[BeyondPresence] Agent dispatch result:", dispatched);
 
   return {
     sessionId,

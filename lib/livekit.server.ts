@@ -1,10 +1,7 @@
-"use server";
-
 import { randomUUID } from "crypto";
 import {
   AccessToken,
-  AgentDispatchClient,
-  RoomJoinPermission
+  AgentDispatchClient
 } from "livekit-server-sdk";
 
 export interface LiveKitViewerOptions {
@@ -18,7 +15,7 @@ export interface LiveKitViewerAccess {
   url: string;
   token: string;
   identity: string;
-  expiresAt?: string;
+  expiresAt?: string | undefined;
 }
 
 function getLiveKitEnv() {
@@ -48,7 +45,7 @@ function deriveRestUrl(wsUrl?: string | null): string | undefined {
   return wsUrl;
 }
 
-export function createLiveKitViewerAccess(options: LiveKitViewerOptions): LiveKitViewerAccess | null {
+export async function createLiveKitViewerAccess(options: LiveKitViewerOptions): Promise<LiveKitViewerAccess | null> {
   const { roomName, name, metadata, ttlSeconds } = options;
   const { wsUrl, apiKey, apiSecret } = getLiveKitEnv();
 
@@ -57,31 +54,29 @@ export function createLiveKitViewerAccess(options: LiveKitViewerOptions): LiveKi
   }
 
   const identity = `financebro-viewer-${randomUUID()}`;
+  
+  // Set TTL - default to 1 hour if not specified
+  const ttl = ttlSeconds && Number.isFinite(ttlSeconds) 
+    ? Math.max(60, Math.min(ttlSeconds, 6 * 60 * 60)) 
+    : 3600; // 1 hour default
+  
   const accessToken = new AccessToken(apiKey, apiSecret, {
     identity,
-    name,
-    metadata
+    ttl, // TTL in seconds from now
+    ...(name && { name }),
+    ...(metadata && { metadata })
   });
 
-  const grant: RoomJoinPermission = {
+  accessToken.addGrant({
     room: roomName,
     roomJoin: true,
-    canPublish: false,
-    canPublishData: false,
+    canPublish: true,
+    canPublishData: true,
     canSubscribe: true
-  };
+  });
 
-  accessToken.addGrant(grant);
-
-  if (ttlSeconds && Number.isFinite(ttlSeconds)) {
-    accessToken.ttl = Math.max(60, Math.min(ttlSeconds, 6 * 60 * 60)); // cap 6h
-  }
-
-  const token = accessToken.toJwt();
-  const expiresAt =
-    ttlSeconds && Number.isFinite(ttlSeconds)
-      ? new Date(Date.now() + ttlSeconds * 1000).toISOString()
-      : undefined;
+  const token = await accessToken.toJwt();
+  const expiresAt = new Date(Date.now() + ttl * 1000).toISOString();
 
   return {
     url: wsUrl,
@@ -104,7 +99,7 @@ export async function dispatchAgentToRoom(
 
   try {
     const client = new AgentDispatchClient(restUrl, apiKey, apiSecret);
-    await client.createDispatch(roomName, agentName, { metadata });
+    await client.createDispatch(roomName, agentName, metadata ? { metadata } : {});
     return true;
   } catch (error) {
     console.error("LiveKit agent dispatch error", error);

@@ -6,8 +6,11 @@ import { Clock, AlertCircle } from "lucide-react";
 import { InterviewPlayer } from "@/components/interview/InterviewPlayer";
 import { LiveControls } from "@/components/interview/LiveControls";
 import { LiveSidebar } from "@/components/interview/LiveSidebar";
+import { VoiceAgentControls } from "@/components/interview/VoiceAgentControls";
+import { VoiceTranscript } from "@/components/interview/VoiceTranscript";
 import { BentoCard } from "@/components/ui/bento-card";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useVoiceAgent } from "@/lib/hooks/useVoiceAgent";
 import { toast } from "sonner";
 import type { InterviewSession } from "@/lib/types/interview";
 
@@ -53,10 +56,35 @@ export function LiveInterviewClient({ session, userName }: LiveInterviewClientPr
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState(MOCK_QUESTIONS);
   const [isEnding, setIsEnding] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isVideoOff, setIsVideoOff] = useState(false);
 
   // Refs pour les timers
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const questionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Voice agent integration
+  const voiceAgent = useVoiceAgent({
+    sessionId: session.id,
+    userName,
+    onError: (error) => {
+      toast.error(`Voice agent error: ${error.message}`);
+    },
+    onStatusChange: (status) => {
+      console.log("[Interview] Voice agent status:", status);
+    },
+    onMessage: (message) => {
+      console.log("[Interview] New message:", message);
+    },
+    onInterviewComplete: (data) => {
+      console.log("[Interview] AI completed 5 questions, ending interview...");
+      toast.success("Interview completed! The AI asked 5 questions.");
+      // Auto-end the interview after a short delay
+      setTimeout(() => {
+        handleEndInterview();
+      }, 3000); // 3 second delay to let user see the completion message
+    },
+  });
 
   // Fonction pour arrêter tous les timers
   const stopAllTimers = useCallback(() => {
@@ -124,6 +152,11 @@ export function LiveInterviewClient({ session, userName }: LiveInterviewClientPr
     stopAllTimers();
     setIsEnding(true);
 
+    // Disconnect voice agent if active
+    if (voiceAgent.isConnected) {
+      voiceAgent.disconnect();
+    }
+
     try {
       // Import dynamique de l'action serveur
       const { completeInterviewSession } = await import("@/lib/actions/interview");
@@ -164,7 +197,7 @@ export function LiveInterviewClient({ session, userName }: LiveInterviewClientPr
       toast.error(error.message || "Erreur lors de la fin de l'interview");
       setIsEnding(false);
     }
-  }, [isEnding, session.id, questions, router, stopAllTimers]);
+  }, [isEnding, session.id, questions, router, stopAllTimers, voiceAgent]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -232,8 +265,36 @@ export function LiveInterviewClient({ session, userName }: LiveInterviewClientPr
             <LiveControls
               onEndInterview={handleEndInterview}
               onHelpRequest={() => toast.info("L'aide arrive bientôt !")}
+              isMuted={isMuted}
+              isVideoOff={isVideoOff}
+              onToggleMute={setIsMuted}
+              onToggleVideo={setIsVideoOff}
             />
           </div>
+
+          {/* Voice Agent Controls */}
+          <BentoCard className="p-4">
+            <VoiceAgentControls
+              status={voiceAgent.status}
+              isSpeaking={voiceAgent.isSpeaking}
+              onConnect={voiceAgent.connect}
+              onDisconnect={voiceAgent.disconnect}
+              onRetry={voiceAgent.retry}
+              error={voiceAgent.error}
+            />
+          </BentoCard>
+
+          {/* Voice Transcript */}
+          {voiceAgent.messages.length > 0 && (
+            <BentoCard className="p-4">
+              <h3 className="text-sm font-medium text-slate-200 mb-3">
+                Conversation Transcript
+              </h3>
+              <div className="max-h-[400px] overflow-y-auto">
+                <VoiceTranscript messages={voiceAgent.messages} />
+              </div>
+            </BentoCard>
+          )}
         </div>
 
         {/* Sidebar */}

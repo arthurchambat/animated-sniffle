@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Rocket, Briefcase, Target, FileText, Upload } from "lucide-react";
+import { Rocket, Briefcase, Target, FileText, Upload, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -18,9 +18,9 @@ import type { FocusArea, InterviewRound } from "@/lib/types/interview";
 
 const preInterviewSchema = z.object({
   title: z.string().min(3, "Le titre doit contenir au moins 3 caractères"),
-  position_round: z.enum(['screening', 'tech', 'final', 'case', 'fit']),
-  company: z.string().min(2, "Le nom de l'entreprise doit contenir au moins 2 caractères"),
-  role: z.string().min(2, "Le rôle doit contenir au moins 2 caractères"),
+  position_round: z.enum(['screening', 'tech', 'final', 'case', 'fit']).optional().or(z.literal('')),
+  company: z.string().min(1, "Veuillez sélectionner une entreprise"),
+  role: z.string().min(1, "Veuillez sélectionner un poste"),
   focus_areas: z.array(z.string()).optional(),
   duration_minutes: z.number().min(15).max(120).default(30),
   cvFile: z.instanceof(File).optional().nullable(),
@@ -38,6 +38,7 @@ const ROUNDS: { value: InterviewRound; label: string }[] = [
 ];
 
 const COMPANIES = [
+  'No preference',
   'Goldman Sachs',
   'Morgan Stanley',
   'JP Morgan',
@@ -54,6 +55,7 @@ const COMPANIES = [
 ];
 
 const ROLES = [
+  'No preference',
   'Analyst',
   'Associate',
   'Vice President',
@@ -82,6 +84,7 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useExistingCV, setUseExistingCV] = useState(!!existingCvPath);
+  const [interviewCount, setInterviewCount] = useState<number | null>(null);
   const supabase = createSupabaseBrowserClient();
 
   const {
@@ -89,17 +92,57 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
     control,
     handleSubmit,
     watch,
+    reset,
+    setValue,
     formState: { errors },
   } = useForm<PreInterviewFormData>({
     resolver: zodResolver(preInterviewSchema),
     defaultValues: {
       title: "",
-      company: "",
-      role: "",
+      company: "No preference",
+      role: "No preference",
       duration_minutes: 30,
       focus_areas: [],
     },
   });
+
+  // Fetch interview count on mount to generate default name
+  useEffect(() => {
+    const fetchInterviewCount = async () => {
+      const { count } = await supabase
+        .from('interview_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+      
+      setInterviewCount((count || 0) + 1);
+    };
+    
+    fetchInterviewCount();
+  }, [userId, supabase]);
+
+  // Set default title and fields when count is available
+  useEffect(() => {
+    if (interviewCount !== null && !watch('title')) {
+      setValue('title', `Interview ${interviewCount}`);
+      setValue('company', 'No preference');
+      setValue('role', 'No preference');
+    }
+  }, [interviewCount, setValue, watch]);
+
+  const handleSetDefaults = () => {
+    reset({
+      title: `Interview ${interviewCount || 1}`,
+      company: "No preference",
+      role: "No preference",
+      position_round: undefined as any,
+      duration_minutes: 30,
+      focus_areas: [],
+      cvFile: null,
+      jobOfferFile: null,
+    });
+    setUseExistingCV(false);
+    toast.success("Paramètres réinitialisés aux valeurs par défaut");
+  };
 
   const onSubmit = async (data: PreInterviewFormData) => {
     setIsSubmitting(true);
@@ -110,7 +153,7 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
         .insert({
           user_id: userId,
           title: data.title,
-          position_round: data.position_round,
+          position_round: data.position_round || 'screening', // Default to screening if no preference
           company: data.company,
           role: data.role,
           focus_areas: data.focus_areas || [],
@@ -175,11 +218,23 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Informations générales */}
       <BentoCard padding="lg">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
-            <Briefcase className="h-5 w-5 text-emerald-200" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
+              <Briefcase className="h-5 w-5 text-emerald-200" />
+            </div>
+            <h2 className="text-xl font-semibold text-slate-100">Informations générales</h2>
           </div>
-          <h2 className="text-xl font-semibold text-slate-100">Informations générales</h2>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleSetDefaults}
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="h-4 w-4" />
+            <span className="hidden sm:inline">Réinitialiser</span>
+          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -196,10 +251,9 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
           <Select
             label="Type d'entretien"
             error={errors.position_round?.message || undefined}
-            required
             {...register('position_round')}
           >
-            <option value="">Sélectionner un type</option>
+            <option value="">No preference</option>
             {ROUNDS.map((round) => (
               <option key={round.value} value={round.value}>
                 {round.label}
@@ -216,55 +270,29 @@ export function PreInterviewForm({ existingCvPath, userId }: PreInterviewFormPro
             {...register('duration_minutes', { valueAsNumber: true })}
           />
 
-          <Controller
-            name="company"
-            control={control}
-            render={({ field }) => (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
-                  Entreprise <span className="text-rose-400 ml-1">*</span>
-                </label>
-                <input
-                  {...field}
-                  value={field.value ?? ""}
-                  list="companies"
-                  placeholder="Sélectionner ou saisir"
-                  className="w-full rounded-(--radius) border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                />
-                <datalist id="companies">
-                  {COMPANIES.map((company) => (
-                    <option key={company} value={company} />
-                  ))}
-                </datalist>
-                {errors.company && <p className="text-xs text-rose-300">{errors.company.message}</p>}
-              </div>
-            )}
-          />
+          <Select
+            label="Entreprise"
+            error={errors.company?.message || undefined}
+            {...register('company')}
+          >
+            {COMPANIES.map((company) => (
+              <option key={company} value={company}>
+                {company}
+              </option>
+            ))}
+          </Select>
 
-          <Controller
-            name="role"
-            control={control}
-            render={({ field }) => (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
-                  Poste <span className="text-rose-400 ml-1">*</span>
-                </label>
-                <input
-                  {...field}
-                  value={field.value ?? ""}
-                  list="roles"
-                  placeholder="Sélectionner ou saisir"
-                  className="w-full rounded-(--radius) border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                />
-                <datalist id="roles">
-                  {ROLES.map((role) => (
-                    <option key={role} value={role} />
-                  ))}
-                </datalist>
-                {errors.role && <p className="text-xs text-rose-300">{errors.role.message}</p>}
-              </div>
-            )}
-          />
+          <Select
+            label="Poste"
+            error={errors.role?.message || undefined}
+            {...register('role')}
+          >
+            {ROLES.map((role) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
+          </Select>
         </div>
       </BentoCard>
 

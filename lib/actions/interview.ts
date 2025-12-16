@@ -53,9 +53,15 @@ export async function completeInterviewSession(
       throw error;
     }
 
-    if (!data || !data.feedback_id) {
+    console.log("[completeInterviewSession] RPC returned:", JSON.stringify(data, null, 2));
+
+    // RPC returns array of rows with feedback_id
+    if (!data || !Array.isArray(data) || data.length === 0 || !data[0].feedback_id) {
+      console.error("[completeInterviewSession] Invalid data format:", data);
       throw new Error("RPC did not return feedback_id");
     }
+
+    const feedbackId = data[0].feedback_id;
 
     // Revalider les pages de feedbacks
     revalidatePath("/feedbacks");
@@ -63,7 +69,7 @@ export async function completeInterviewSession(
 
     return {
       success: true,
-      feedbackId: data.feedback_id,
+      feedbackId: feedbackId,
     };
   } catch (error: any) {
     console.error("[completeInterviewSession] Error:", error);
